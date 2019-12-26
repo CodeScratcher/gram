@@ -3,6 +3,7 @@
 
 ### C ###
 # Prerequisites
+lt
 *.d
 
 # Object files
