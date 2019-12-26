@@ -1,9 +1,14 @@
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -34,11 +39,19 @@ struct abuf {
     int len;
 };
 
+// to store row of text
+typedef struct erow {
+    int size;
+    char *chars;
+} erow;
+
 // editor info
 struct editorConfig {
     int cx, cy; // cursor position
     int screenrows;
     int screencols;
+    int numrows; // number of rows
+    erow row; // content of the rows
     struct termios orig_termios;
 };
 
@@ -59,14 +72,40 @@ int getCursorPosition(int *rows, int *cols);
 void abAppend(struct abuf *ab, const char *s, int len);
 void abFree(struct abuf *ab);
 void editorMoveCursor(int key);
+void editorOpen();
 
-// functions
+    // functions    
 void initEditor() {
     E.cx = 0;
     E.cy = 0;
+    E.numrows = 0;
     if (getWindowSize(&E.screenrows, &E.screencols) == -1) {
         die("getWindowSize");
     }
+}
+
+void editorOpen(char *filename) {
+    char *line = NULL;
+    size_t linecap = 0;
+    ssize_t linelen;
+    FILE *fp = fopen(filename, "r");
+    if (!fp) { 
+        die("fopen");
+    }
+    
+    linelen = getline(&line, &linecap, fp);
+    if (linelen != -1) {
+        while (linelen > 0 && (line[linelen - 1] == '\n' ||
+                               line[linelen - 1] == '\r'))
+            linelen--;
+        E.row.size = linelen;
+        E.row.chars = malloc(linelen + 1);
+        memcpy(E.row.chars, line, linelen);
+        E.row.chars[linelen] = '\0';
+        E.numrows = 1;
+    }
+    free(line);
+    fclose(fp);
 }
 
 // append data to buffer
@@ -129,37 +168,46 @@ int getWindowSize(int *rows, int *cols) {
     }
 } 
 
-// prints a tilde on the left of the screen
+// prints rows
 void editorDrawRows(struct abuf *ab) {
     int y;
     int welcomelen;
     int padding;
+    int len;
     char welcome[80];
 
     for(y = 0; y < E.screenrows; y++) {
-        if (y == E.screenrows / 3) {
-            welcomelen = snprintf(welcome, sizeof(welcome),
-                "Light Text editor -- version %s", EDITOR_VERSION);
-            if (welcomelen > E.screencols) {
-                welcomelen = E.screencols;
-            }
-            padding = (E.screencols - welcomelen) / 2;
-            if (padding) {
+        if (y >= E.numrows) {
+            if (E.numrows == 0 && y == E.screenrows / 3) {
+                welcomelen = snprintf(welcome, sizeof(welcome),
+                    "Light Text editor -- version %s", EDITOR_VERSION);
+                if (welcomelen > E.screencols) {
+                    welcomelen = E.screencols;
+                }
+                padding = (E.screencols - welcomelen) / 2;
+                if (padding) {
+                    abAppend(ab, "~", 1);
+                    padding--;
+                }
+                while (padding--) {
+                    abAppend(ab, " ", 1);
+                }
+                abAppend(ab, welcome, welcomelen);
+            } 
+            else {
                 abAppend(ab, "~", 1);
-                padding--;
             }
-            while (padding--) {
-                abAppend(ab, " ", 1);
+            
+            abAppend(ab, "\x1b[K", 3);  // clear line
+            if (y < E.screenrows - 1) {
+                abAppend(ab, "\r\n", 2);
             }
-            abAppend(ab, welcome, welcomelen);
         } 
         else {
-            abAppend(ab, "~", 1);
-        }
-        
-        abAppend(ab, "\x1b[K", 3);  // clear line
-        if (y < E.screenrows - 1) {
-            abAppend(ab, "\r\n", 2);
+            len = E.row.size;
+            if (len > E.screencols)
+                len = E.screencols;
+            abAppend(ab, E.row.chars, len);
         }
     }
 }
@@ -362,9 +410,12 @@ void enableRawMode() {
     }
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     enableRawMode();
     initEditor();
+    if(argc >= 2) {
+        editorOpen(argv[1]);
+    }
 
     while(1) {
         editorRefreshScreen();
