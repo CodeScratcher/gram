@@ -98,7 +98,7 @@ void abAppend(struct abuf *ab, const char *s, int len);
 void abFree(struct abuf *ab);
 void editorMoveCursor(int key);
 void editorOpen();
-void editorInsertRow(int at, char *s, size_t len) ;
+void editorInsertRow(int at, const char *s, size_t len) ;
 void editorScroll();
 void editorUpdateRow(erow *row);
 int editorRowCxToRx(erow *row, int cx);
@@ -118,7 +118,7 @@ void editorInsertNewline();
 void editorRefreshScreen();
 void editorFind();
 int editorRowRxToCx(erow *row, int rx);
-char *editorPrompt(char *prompt, void (*callback)(char *, int));
+char *editorPrompt(const char *prompt, void (*callback)(char *, int));
 void editorFindCallback(char *query, int key);
 
 // functions    
@@ -211,7 +211,7 @@ int editorRowRxToCx(erow *row, int rx) {
     return cx;
 }
 
-void editorInsertRow(int at, char *s, size_t len) {
+void editorInsertRow(int at, const char *s, size_t len) {
     if (at < 0 || at > E.numrows)
         return;
     E.row = realloc(E.row, sizeof(erow) * (E.numrows + 1));
@@ -436,7 +436,7 @@ int editorRowCxToRx(erow *row, int cx) {
     return rx;
 }
 
-char *editorPrompt(char *prompt, void (*callback)(char *, int))  {
+char *editorPrompt(const char *prompt, void (*callback)(char *, int))  {
     size_t bufsize = 128;
     char *buf = malloc(bufsize);
     size_t buflen = 0;
