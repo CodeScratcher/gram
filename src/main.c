@@ -40,6 +40,9 @@ TODO:
 // init buffer empty
 #define ABUF_INIT {NULL, 0}
 
+// debug flag
+#define PRINT_KEY 0
+
 enum editorKey {
     BACKSPACE = 127,
     ARROW_LEFT = 1000,
@@ -126,6 +129,18 @@ void editorFind();
 int editorRowRxToCx(erow *row, int rx);
 char *editorPrompt(const char *prompt, void (*callback)(char *, int));
 void editorFindCallback(char *query, int key);
+
+// debug utilities
+void dumpReceivedReadKey();
+
+void dumpReceivedReadKey(int key) {
+    char str[1000];
+    char dest[1000] = "Received: ";
+    sprintf(str, "%d", key);
+    strcat(dest,str);
+    editorSetStatusMessage(dest);
+}
+
 
 // functions    
 void initEditor() {
@@ -657,8 +672,13 @@ void editorMoveCursor(int key) {
 void editorProcessKeypress() {
     static int quit_times = EDITOR_QUIT_TIMES;
     int c = editorReadKey();
+
+    if(PRINT_KEY) {
+        dumpReceivedReadKey(c);
+    }
+
     switch (c) {
-        case 'r':
+        case '\r':
             editorInsertNewline();
             break;
         case CTRL_KEY('q'):
