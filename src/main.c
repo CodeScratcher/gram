@@ -17,11 +17,17 @@
 
 /*
 TODO:
+- line numbers
+- libncurses?
 - split in multiple files
 - reset status message (help with shortcuts save quit etc) when file is saved
 - better and safer saving (copy file/open a copy)
 - remove all break in loop statement (i do not like them)
 - handle F1 - F10?
+- copy paste ctrl c ctrl v
+- config file
+- auto indent
+- syntax highlight
 */
 
 #define EDITOR_VERSION "0.0.1"
