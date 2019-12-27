@@ -1,4 +1,4 @@
-CFLAGS= -Wall -Wextra -pedantic 
+CFLAGS= -Wall -Wextra -pedantic -Os
 CFLAGSPEDANTIC= -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wwrite-strings -Wunreachable-code -Winit-self -fsanitize=address -std=c99
 lt: main.c
 	${CC} ${CFLAGS} ${CFLAGSPEDANTIC} main.c -o lt
