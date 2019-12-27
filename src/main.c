@@ -605,7 +605,9 @@ void editorRefreshScreen() {
     abAppend(&ab, buf, strlen(buf));
     abAppend(&ab, "\x1b[?25h", 6); // show the cursor
 
-    write(STDOUT_FILENO, ab.b, ab.len);
+    if(write(STDOUT_FILENO, ab.b, ab.len) < 0) {
+        die(strerror(errno));
+    }
     abFree(&ab);
 }
 
@@ -666,8 +668,12 @@ void editorProcessKeypress() {
                 quit_times--;
                 return;
             }
-            write(STDOUT_FILENO, "\x1b[2J", 4);
-            write(STDOUT_FILENO, "\x1b[H", 3);
+            if(write(STDOUT_FILENO, "\x1b[2J", 4) < 0) {
+                die(strerror(errno));
+            }
+            if(write(STDOUT_FILENO, "\x1b[H", 3) < 0) {
+                die(strerror(errno));
+            }
             exit(0);
             break;
 
@@ -862,8 +868,12 @@ void editorSave() {
 
 // prints the string and dies
 void die(const char *s) {
-    write(STDOUT_FILENO, "\x1b[2J", 4);
-    write(STDOUT_FILENO, "\x1b[H", 3);
+    if(write(STDOUT_FILENO, "\x1b[2J", 4) < 0) {
+        perror(strerror(errno));
+    }
+    if(write(STDOUT_FILENO, "\x1b[H", 3) < 0) {
+        perror(strerror(errno));
+    }
     perror(s);
     exit(1);
 }
