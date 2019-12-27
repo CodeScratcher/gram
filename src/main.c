@@ -236,7 +236,8 @@ void editorInsertRow(int at, const char *s, size_t len) {
 void editorInsertNewline() {
     if (E.cx == 0) {
         editorInsertRow(E.cy, "", 0);
-    } else {
+    } 
+    else {
         erow *row = &E.row[E.cy];
         editorInsertRow(E.cy + 1, &row->chars[E.cx], row->size - E.cx);
         row = &E.row[E.cy];

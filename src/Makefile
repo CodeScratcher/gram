@@ -1,7 +1,7 @@
 CFLAGS= -Wall -Wextra -pedantic -Os
 CFLAGSPEDANTIC= -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wwrite-strings -Wunreachable-code -Winit-self -fsanitize=address -std=c99
 gram: main.c
-	${CC} ${CFLAGS} ${CFLAGSPEDANTIC} main.c -o lt
+	${CC} ${CFLAGS} ${CFLAGSPEDANTIC} main.c -o gram
 
 # Flags info - disable them for build?
 # -Wfloat-equal: useful because usually testing floating-point numbers for equality is bad.
