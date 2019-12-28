@@ -18,6 +18,7 @@
 /*
 TODO:
 - line numbers
+- print git branch
 - libncurses?
 - split in multiple files
 - reset status message (help with shortcuts save quit etc) when file is saved
@@ -69,13 +70,13 @@ typedef struct erow {
     int size;
     int rsize;
     char *chars;
-    char *render; // to render tab
+    char *render;
 } erow;
 
 // editor info
 struct editorConfig {
     int cx, cy; // cursor position
-    int rx;
+    int rx; // for tabs and render
     int rowoff; // for vertical scrolling
     int coloff; // for horizontal scrolling
     int screenrows;
@@ -86,13 +87,15 @@ struct editorConfig {
     char statusmsg[80];
     time_t statusmsg_time;
     erow *row; // content of the rows
+    char *gitBranch;
     struct termios orig_termios;
 };
 
 // global variables
 struct editorConfig E;
+const char *default_status_msg = "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find";
 
-// prototypes
+// prototypes    
 void disableRawMode();
 void enableRawMode();
 void die(const char *s);
@@ -129,6 +132,7 @@ void editorFind();
 int editorRowRxToCx(erow *row, int rx);
 char *editorPrompt(const char *prompt, void (*callback)(char *, int));
 void editorFindCallback(char *query, int key);
+void getGitBranch();
 
 // debug utilities
 void dumpReceivedReadKey();
@@ -141,8 +145,6 @@ void dumpReceivedReadKey(int key) {
     editorSetStatusMessage(dest);
 }
 
-
-// functions    
 void initEditor() {
     E.cx = 0;
     E.cy = 0;
@@ -153,6 +155,7 @@ void initEditor() {
     E.dirty = 0;
     E.row = NULL;
     E.filename = NULL;
+    E.gitBranch = NULL;
     E.statusmsg[0] = '\0';
     E.statusmsg_time = 0;
     if (getWindowSize(&E.screenrows, &E.screencols) == -1) {
@@ -160,7 +163,46 @@ void initEditor() {
     }
     // room for the status bar on the last line
     // and the status message on the second to last
-    E.screenrows -= 2; 
+    E.screenrows -= 2;
+
+    getGitBranch();
+}
+
+// creates a child process that exec git branch
+void getGitBranch() {
+    int fd[2];
+    int pid;
+    int nbytes;
+    char readbuffer[80];
+
+    if(pipe(fd) < 0) {
+        return;
+    }
+
+    pid = fork();
+
+    if (pid == 0) {
+        // child process
+        close(fd[0]); // close input
+        dup2(fd[1], 1);
+        close(fd[1]);
+        // execute the command git rev-parse --abbrev-ref HEAD
+        execlp("git", "git", "rev-parse", "--abbrev-ref", "HEAD", NULL);
+    } 
+    else if (pid > 0) {
+        // parent
+        close(fd[1]); // close output
+        // wait(NULL);
+        nbytes = read(fd[0], readbuffer, sizeof(readbuffer));
+        if(nbytes > 0) {
+            readbuffer[strlen(readbuffer) - 1] = '\0';
+            // editorSetStatusMessage(readbuffer);
+            if (!strstr(readbuffer, "Not a git repository")) {
+                free(E.gitBranch);
+                E.gitBranch = strdup(readbuffer);
+            }
+        }
+    }
 }
 
 void editorFindCallback(char *query, int key) {
@@ -333,11 +375,11 @@ void editorDrawStatusBar(struct abuf *ab) {
     int len, rlen;
     char status[80], rstatus[80];
     abAppend(ab, "\x1b[7m", 4);
-    len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
-                   E.filename ? E.filename : "[No Name]", E.numrows,
-                   E.dirty ? "(modified)" : "");
-    rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d",
-                        E.cy + 1, E.numrows);
+    len = snprintf(status, sizeof(status), "%.20s%s - %d lines - branch: %s",
+                   E.filename ? E.filename : "[No Name]",
+                   E.dirty ? "*" : "", E.numrows, E.gitBranch);
+    rlen = snprintf(rstatus, sizeof(rstatus), "%d,%d",
+                        E.cx + 1, E.cy + 1);
     if (len > E.screencols)
         len = E.screencols;
     abAppend(ab, status, len);
@@ -346,7 +388,7 @@ void editorDrawStatusBar(struct abuf *ab) {
             abAppend(ab, rstatus, rlen);
             break;
         } else {
-            abAppend(ab, " ", 1);
+            abAppend(ab, " ", 1); // fill the line with spaces
             len++;
         }
     }
@@ -363,7 +405,12 @@ void editorUpdateRow(erow *row) {
         if (row->chars[j] == '\t')
             tabs++;
     free(row->render);
+    // add space for the line number
+    // by now fixed at 1
+    // int line_number_size = 2; // number + space
     row->render = malloc(row->size + tabs * (EDITOR_TAB_STOP - 1) + 1);
+    // row->render[0] = '1';
+    // row->render[1] = ' ';
     idx = 0;
     for (j = 0; j < row->size; j++) {
         if (row->chars[j] == '\t') {
@@ -472,7 +519,8 @@ char *editorPrompt(const char *prompt, void (*callback)(char *, int))  {
                 buf[--buflen] = '\0';
         } 
         else if (c == '\x1b') {
-            editorSetStatusMessage("");
+            // editorSetStatusMessage("");
+            editorSetStatusMessage(default_status_msg);
             if (callback)
                 callback(buf, c);
             free(buf);
@@ -480,7 +528,8 @@ char *editorPrompt(const char *prompt, void (*callback)(char *, int))  {
         } 
         else if (c == '\r') {
             if (buflen != 0) {
-                editorSetStatusMessage("");
+                // editorSetStatusMessage("");
+                editorSetStatusMessage(default_status_msg);
                 if (callback)
                     callback(buf, c);
 
@@ -587,12 +636,16 @@ void editorDrawRows(struct abuf *ab) {
             } else {
                 abAppend(ab, "~", 1);
             }
-        } else {
+        } 
+        else {
             len = E.row[filerow].rsize - E.coloff;
             if (len < 0)
                 len = 0;
             if (len > E.screencols)
                 len = E.screencols;
+            // char line_number[10];
+            // sprintf(line_number, "%d ", filerow);
+            // abAppend(ab, line_number, strlen(line_number));
             abAppend(ab, &E.row[filerow].render[E.coloff], len);
         }
 
@@ -675,6 +728,12 @@ void editorProcessKeypress() {
 
     if(PRINT_KEY) {
         dumpReceivedReadKey(c);
+    }
+
+    // reset the status msg in case is not default after 2 sec
+    // maybe do it with a flag?
+    if (E.dirty && time(NULL) - E.statusmsg_time > 2) {
+        editorSetStatusMessage(default_status_msg);
     }
 
     switch (c) {
@@ -948,7 +1007,7 @@ int main(int argc, char *argv[]) {
         editorOpen(argv[1]);
     }
 
-    editorSetStatusMessage("HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find");
+    editorSetStatusMessage(default_status_msg);
     while(1) {
         editorRefreshScreen();
         editorProcessKeypress();
