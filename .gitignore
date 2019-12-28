@@ -4,6 +4,7 @@
 ### C ###
 # Prerequisites
 test.txt
+test.c
 gram
 *.d
 
