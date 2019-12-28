@@ -27,6 +27,8 @@ TODO:
 - config file
 - auto indent
 - syntax highlight
+- ctrl d -> delete line
+- ctrl r -> duplicate line? 
 */
 
 #define EDITOR_VERSION "0.0.1"
@@ -81,6 +83,7 @@ struct editorConfig {
     int screencols;
     int numrows; // number of rows
     int dirty; // file saved or not
+    int filesize; // <-------- integer overflow if the file is big
     char *filename; // current filename
     char *tempfilename; // filename saved
     char statusmsg[80];
@@ -132,6 +135,7 @@ int editorRowRxToCx(erow *row, int rx);
 char *editorPrompt(const char *prompt, void (*callback)(char *, int));
 void editorFindCallback(char *query, int key);
 void getGitBranch();
+void resetFileSize(FILE *fp);
 
 // debug utilities
 void dumpReceivedReadKey();
@@ -163,6 +167,7 @@ void initEditor() {
     // room for the status bar on the last line
     // and the status message on the second to last
     E.screenrows -= 2;
+    E.filesize = 0; 
 
     getGitBranch();
 }
@@ -305,10 +310,12 @@ void editorInsertNewline() {
     E.cx = 0;
 }
 
-// TODO: update
-// before opening, create a file with the name
-// .<filename>.tmp, copy the content and open that file
-// to remove file use remove from stdio
+void resetFileSize(FILE *fp) {
+    fseek(fp, 0, SEEK_END);
+    E.filesize = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+}
+
 void editorOpen(char *filename) {
     char *line = NULL;
     size_t linecap = 0;
@@ -322,9 +329,12 @@ void editorOpen(char *filename) {
     if (!fp) { 
         die("fopen");
     }
-    
+
+    // get file size
+    resetFileSize(fp);
+
     // filename -> .filename.tmp -> n+5
-    tempFilename = (char *)malloc(sizeof(char)*strlen(filename) + 6);
+    tempFilename = (char *)malloc(sizeof(char) * strlen(filename) + 6);
     snprintf(tempFilename,100,".%s.tmp",filename);
     copied = fopen(tempFilename, "w");
 
@@ -405,9 +415,9 @@ void editorDrawStatusBar(struct abuf *ab) {
     int len, rlen;
     char status[80], rstatus[80];
     abAppend(ab, "\x1b[7m", 4);
-    len = snprintf(status, sizeof(status), "%.20s%s - %d lines - branch: %s",
+    len = snprintf(status, sizeof(status), "%.20s%s (%d bytes) - %d lines - branch: %s",
                    E.filename ? E.filename : "[No Name]",
-                   E.dirty ? "*" : "", E.numrows, E.gitBranch);
+                   E.dirty ? "*" : "",E.filesize, E.numrows, E.gitBranch);
     rlen = snprintf(rstatus, sizeof(rstatus), "%d,%d",
                         E.cx + 1, E.cy + 1);
     if (len > E.screencols)
@@ -762,7 +772,7 @@ void editorProcessKeypress() {
 
     // reset the status msg in case is not default after 2 sec
     // maybe do it with a flag?
-    if (E.dirty && time(NULL) - E.statusmsg_time > 2) {
+    if (time(NULL) - E.statusmsg_time > 2) {
         editorSetStatusMessage(default_status_msg);
     }
 
@@ -939,8 +949,6 @@ char *editorRowsToString(int *buflen) {
     return buf;
 }
 
-// TODO: use advanced and safer features, such as copy the file
-// in another file, save it and rename it (overwrite)
 void editorSave() {
     int len, fd, written;
     char *buf;
@@ -981,6 +989,7 @@ void editorSave() {
                     while ((c = fgetc(fp)) != EOF) {
                         fputc(c, original);
                     }
+                    resetFileSize(fp);
                     fclose(original);
                     fclose(fp);
                 }
