@@ -18,11 +18,9 @@
 /*
 TODO:
 - line numbers
-- print git branch
 - libncurses?
+- undo
 - split in multiple files
-- reset status message (help with shortcuts save quit etc) when file is saved
-- better and safer saving (copy file/open a copy)
 - remove all break in loop statement (i do not like them)
 - handle F1 - F10?
 - copy paste ctrl c ctrl v
@@ -84,6 +82,7 @@ struct editorConfig {
     int numrows; // number of rows
     int dirty; // file saved or not
     char *filename; // current filename
+    char *tempfilename; // filename saved
     char statusmsg[80];
     time_t statusmsg_time;
     erow *row; // content of the rows
@@ -306,15 +305,45 @@ void editorInsertNewline() {
     E.cx = 0;
 }
 
+// TODO: update
+// before opening, create a file with the name
+// .<filename>.tmp, copy the content and open that file
+// to remove file use remove from stdio
 void editorOpen(char *filename) {
     char *line = NULL;
     size_t linecap = 0;
     ssize_t linelen;
-    FILE *fp = fopen(filename, "r");
+    int c;
+    char *tempFilename;
+    FILE *copied;
+    FILE *fp;
+
+    fp = fopen(filename, "r");
     if (!fp) { 
         die("fopen");
     }
+    
+    // filename -> .filename.tmp -> n+5
+    tempFilename = (char *)malloc(sizeof(char)*strlen(filename) + 6);
+    snprintf(tempFilename,100,".%s.tmp",filename);
+    copied = fopen(tempFilename, "w");
 
+    if(!copied) {
+        die("fopen");
+    }
+
+    free(E.tempfilename);
+    E.tempfilename = strdup(tempFilename);
+
+    while ((c = fgetc(fp)) != EOF) {
+        fputc(c, copied);
+    }
+
+    fclose(fp);
+    fclose(copied);
+
+    // now the file is in fp not in copied
+    fp = fopen(tempFilename, "r");
     free(E.filename);
     E.filename = strdup(filename);
 
@@ -326,6 +355,7 @@ void editorOpen(char *filename) {
     }
     free(line);
     fclose(fp);
+    free(tempFilename);
     E.dirty = 0;
 }
 
@@ -754,6 +784,10 @@ void editorProcessKeypress() {
             if(write(STDOUT_FILENO, "\x1b[H", 3) < 0) {
                 die(strerror(errno));
             }
+            // delete the tempfile
+            if(E.tempfilename != NULL) {
+                remove(E.tempfilename);
+            }
             exit(0);
             break;
 
@@ -910,8 +944,12 @@ char *editorRowsToString(int *buflen) {
 void editorSave() {
     int len, fd, written;
     char *buf;
+    FILE *original;
+    FILE *fp;
+    int c;
     if (E.filename == NULL) {
         E.filename = editorPrompt("Save as: %s (ESC to cancel)",NULL);
+        E.tempfilename = strdup(E.filename);
         if (E.filename == NULL) {
             editorSetStatusMessage("Save aborted");
             return;
@@ -919,7 +957,7 @@ void editorSave() {
     }
 
     buf = editorRowsToString(&len);
-    fd = open(E.filename, O_RDWR | O_CREAT, 0644);
+    fd = open(E.tempfilename, O_RDWR | O_CREAT, 0644);
     if(fd == -1) {
         editorSetStatusMessage("Unable to save the file\n"); // improve
     } 
@@ -933,6 +971,19 @@ void editorSave() {
                 close(fd);
                 free(buf);
                 E.dirty = 0;
+                // now copy all the data to the original file
+                if(strcmp(E.filename,E.tempfilename) != 0) {
+                    fp = fopen(E.tempfilename, "r");
+                    original = fopen(E.filename, "w");
+                    if(fp == NULL || original == NULL) {
+                        die("Bad things happened during the copy");
+                    }
+                    while ((c = fgetc(fp)) != EOF) {
+                        fputc(c, original);
+                    }
+                    fclose(original);
+                    fclose(fp);
+                }
                 editorSetStatusMessage("%d bytes written to disk", len);
                 return;
             }
