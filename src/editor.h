@@ -1,3 +1,6 @@
+#ifndef EDITOR_H
+#define EDITOR_H
+
 #define _DEFAULT_SOURCE
 #define _BSD_SOURCE
 #define _GNU_SOURCE
@@ -83,3 +86,10 @@ struct editorConfig E;
 
 void abAppend(struct abuf *ab, const char *s, int len);
 void abFree(struct abuf *ab);
+void initEditor();
+void die(const char *s);
+void getGitBranch();
+int getCursorPosition(int *rows, int *cols);
+int getWindowSize(int *rows, int *cols);
+
+#endif
