@@ -132,13 +132,13 @@ void editorFreeRow(erow *row);
 void editorDelRow(int at);
 void editorRowAppendString(erow *row, char *s, size_t len);
 void editorInsertNewline();
-void editorRefreshScreen();
 void editorFind();
 int editorRowRxToCx(erow *row, int rx);
 char *editorPrompt(const char *prompt, void (*callback)(char *, int));
 void editorFindCallback(char *query, int key);
 // void getGitBranch();
 void resetFileSize(FILE *fp);
+void editorDuplicateLine();
 
 // debug utilities
 void dumpReceivedReadKey();
@@ -281,6 +281,12 @@ int editorRowRxToCx(erow *row, int rx) {
     return cx;
 }
 
+// duplicate line
+// merge and compact with editorInsertRow?
+void editorDuplicateLine(int at) {
+    editorInsertRow(at,E.row[at].chars,E.row[at].size);
+}
+
 void editorInsertRow(int at, const char *s, size_t len) {
     if (at < 0 || at > E.numrows)
         return;
@@ -364,7 +370,7 @@ void editorOpen(char *filename) {
         while (linelen > 0 && (line[linelen - 1] == '\n' ||
                                line[linelen - 1] == '\r'))
             linelen--;
-        editorInsertRow(E.numrows,line, linelen);
+        editorInsertRow(E.numrows, line, linelen);
     }
     free(line);
     fclose(fp);
@@ -802,6 +808,10 @@ void editorProcessKeypress() {
                 remove(E.tempfilename);
             }
             exit(0);
+            break;
+
+        case CTRL_KEY('d'):
+            editorDuplicateLine(E.cy);
             break;
 
         case CTRL_KEY('s'):

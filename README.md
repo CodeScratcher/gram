@@ -14,6 +14,6 @@ Progress:
 - [ ] config file
 - [ ] auto indent
 - [ ] syntax highlight
-- [ ] ctrl d -> delete line
-- [ ] ctrl r -> duplicate line? 
+- [X] ctrl d -> duplicate line
+- [ ] ctrl r -> remove line? 
 - [ ] fix saving files

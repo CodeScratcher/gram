@@ -53,22 +53,22 @@ struct abuf {
     int len;
 };
 
-// to store row of text
+// represents a single line of the file
 typedef struct erow {
-    int size;
-    int rsize;
-    char *chars;
-    char *render;
+    int size; // size of the row, excluding the null term
+    int rsize; // size of the rendered row
+    char *chars; // row content
+    char *render; // row content "rendered" for screen (for TABs)
 } erow;
 
 // editor info
 struct editorConfig {
-    int cx, cy; // cursor position
+    int cx, cy; // cursor position in characters
     int rx;     // for tabs and render
-    int rowoff; // for vertical scrolling
-    int coloff; // for horizontal scrolling
-    int screenrows;
-    int screencols;
+    int rowoff; // offset of row displayed for vertical scrolling
+    int coloff; // offset of column displayed for horizontal scrolling
+    int screenrows; // number of rows that we can show
+    int screencols; // number of columns that we can show
     int numrows;        // number of rows
     int dirty;          // file saved or not
     int filesize;       // <-------- integer overflow if the file is big
