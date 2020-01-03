@@ -1,19 +1,21 @@
-#define _DEFAULT_SOURCE
-#define _BSD_SOURCE
-#define _GNU_SOURCE
+// #define _DEFAULT_SOURCE
+// #define _BSD_SOURCE
+// #define _GNU_SOURCE
 
-#include <ctype.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <termios.h>
-#include <time.h>
-#include <unistd.h>
+// #include <ctype.h>
+// #include <errno.h>
+// #include <fcntl.h>
+// #include <stdarg.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+// #include <sys/ioctl.h>
+// #include <sys/types.h>
+// #include <termios.h>
+// #include <time.h>
+// #include <unistd.h>
+
+#include "bars.h"
 
 /*
 TODO:
@@ -31,70 +33,70 @@ TODO:
 - ctrl r -> duplicate line? 
 */
 
-#define EDITOR_VERSION "0.0.1"
-#define EDITOR_TAB_STOP 4
-// number of times the user needs to press ctrl q to close without saving
-#define EDITOR_QUIT_TIMES 3 
+// #define EDITOR_VERSION "0.0.1"
+// #define EDITOR_TAB_STOP 4
+// // number of times the user needs to press ctrl q to close without saving
+// #define EDITOR_QUIT_TIMES 3 
 
-// to mirror ctrl key features
-#define CTRL_KEY(k) ((k)&0x1f)
-// init buffer empty
-#define ABUF_INIT {NULL, 0}
+// // to mirror ctrl key features
+// #define CTRL_KEY(k) ((k)&0x1f)
+// // init buffer empty
+// #define ABUF_INIT {NULL, 0}
 
-// debug flag
-#define PRINT_KEY 0
+// // debug flag
+// #define PRINT_KEY 0
 
-enum editorKey {
-    BACKSPACE = 127,
-    ARROW_LEFT = 1000,
-    ARROW_RIGHT,
-    ARROW_UP,
-    ARROW_DOWN,
-    DEL_KEY,
-    HOME_KEY,
-    END_KEY,
-    PAGE_UP,
-    PAGE_DOWN
-};
+// enum editorKey {
+//     BACKSPACE = 127,
+//     ARROW_LEFT = 1000,
+//     ARROW_RIGHT,
+//     ARROW_UP,
+//     ARROW_DOWN,
+//     DEL_KEY,
+//     HOME_KEY,
+//     END_KEY,
+//     PAGE_UP,
+//     PAGE_DOWN
+// };
 
-// buffer that stores what needs to be printed on screen
-// to avoid multiple write, we append the data to a buffer
-// and then write the buffer
-struct abuf {
-    char *b;
-    int len;
-};
+// // buffer that stores what needs to be printed on screen
+// // to avoid multiple write, we append the data to a buffer
+// // and then write the buffer
+// struct abuf {
+//     char *b;
+//     int len;
+// };
 
-// to store row of text
-typedef struct erow {
-    int size;
-    int rsize;
-    char *chars;
-    char *render;
-} erow;
+// // to store row of text
+// typedef struct erow {
+//     int size;
+//     int rsize;
+//     char *chars;
+//     char *render;
+// } erow;
 
-// editor info
-struct editorConfig {
-    int cx, cy; // cursor position
-    int rx; // for tabs and render
-    int rowoff; // for vertical scrolling
-    int coloff; // for horizontal scrolling
-    int screenrows;
-    int screencols;
-    int numrows; // number of rows
-    int dirty; // file saved or not
-    int filesize; // <-------- integer overflow if the file is big
-    char *filename; // current filename
-    char *tempfilename; // filename saved
-    char statusmsg[80];
-    time_t statusmsg_time;
-    erow *row; // content of the rows
-    char *gitBranch;
-    struct termios orig_termios;
-};
+// // editor info
+// struct editorConfig {
+//     int cx, cy; // cursor position
+//     int rx; // for tabs and render
+//     int rowoff; // for vertical scrolling
+//     int coloff; // for horizontal scrolling
+//     int screenrows;
+//     int screencols;
+//     int numrows; // number of rows
+//     int dirty; // file saved or not
+//     int filesize; // <-------- integer overflow if the file is big
+//     char *filename; // current filename
+//     char *tempfilename; // filename saved
+//     char statusmsg[80];
+//     time_t statusmsg_time;
+//     erow *row; // content of the rows
+//     char *gitBranch;
+//     struct termios orig_termios;
+// };
 
-// global variables
-struct editorConfig E;
+// // global variables
+// struct editorConfig E;
 const char *default_status_msg = "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find";
 
 // prototypes    
@@ -108,17 +110,17 @@ void editorRefreshScreen();
 int getWindowSize(int *rows, int *cols);
 void initEditor();
 int getCursorPosition(int *rows, int *cols);
-void abAppend(struct abuf *ab, const char *s, int len);
-void abFree(struct abuf *ab);
+// void abAppend(struct abuf *ab, const char *s, int len);
+// void abFree(struct abuf *ab);
 void editorMoveCursor(int key);
 void editorOpen();
 void editorInsertRow(int at, const char *s, size_t len) ;
 void editorScroll();
 void editorUpdateRow(erow *row);
 int editorRowCxToRx(erow *row, int cx);
-void editorDrawStatusBar(struct abuf *ab);
-void editorSetStatusMessage(const char *fmt, ...);
-void editorDrawMessageBar(struct abuf *ab);
+// void editorDrawStatusBar(struct abuf *ab);
+// void editorSetStatusMessage(const char *fmt, ...);
+// void editorDrawMessageBar(struct abuf *ab);
 void editorRowInsertChar(erow *row, int at, int c);
 void editorInsertChar(int c);
 char *editorRowsToString(int *buflen);
@@ -369,25 +371,25 @@ void editorOpen(char *filename) {
     E.dirty = 0;
 }
 
-void editorSetStatusMessage(const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(E.statusmsg, sizeof(E.statusmsg), fmt, ap);
-    va_end(ap);
-    E.statusmsg_time = time(NULL);
-}
+// void editorSetStatusMessage(const char *fmt, ...) {
+//     va_list ap;
+//     va_start(ap, fmt);
+//     vsnprintf(E.statusmsg, sizeof(E.statusmsg), fmt, ap);
+//     va_end(ap);
+//     E.statusmsg_time = time(NULL);
+// }
 
-void editorDrawMessageBar(struct abuf *ab) {
-    int msglen;
-    abAppend(ab, "\x1b[K", 3);
-    msglen = strlen(E.statusmsg);
-    if (msglen > E.screencols)
-        msglen = E.screencols;
-    // status message only for 5 seconds
-    // if (msglen && time(NULL) - E.statusmsg_time < 5)
-    if (msglen)
-        abAppend(ab, E.statusmsg, msglen);
-}
+// void editorDrawMessageBar(struct abuf *ab) {
+//     int msglen;
+//     abAppend(ab, "\x1b[K", 3);
+//     msglen = strlen(E.statusmsg);
+//     if (msglen > E.screencols)
+//         msglen = E.screencols;
+//     // status message only for 5 seconds
+//     // if (msglen && time(NULL) - E.statusmsg_time < 5)
+//     if (msglen)
+//         abAppend(ab, E.statusmsg, msglen);
+// }
 
 void editorScroll() {
     E.rx = 0;
@@ -409,32 +411,32 @@ void editorScroll() {
     }
 }
 
-// draw status bar on the bottom of the screen
-// filename max 20 char
-void editorDrawStatusBar(struct abuf *ab) {
-    int len, rlen;
-    char status[80], rstatus[80];
-    abAppend(ab, "\x1b[7m", 4);
-    len = snprintf(status, sizeof(status), "%.20s%s (%d bytes) - %d lines - branch: %s",
-                   E.filename ? E.filename : "[No Name]",
-                   E.dirty ? "*" : "",E.filesize, E.numrows, E.gitBranch);
-    rlen = snprintf(rstatus, sizeof(rstatus), "%d,%d",
-                        E.cx + 1, E.cy + 1);
-    if (len > E.screencols)
-        len = E.screencols;
-    abAppend(ab, status, len);
-    while (len < E.screencols) {
-        if (E.screencols - len == rlen) {
-            abAppend(ab, rstatus, rlen);
-            break;
-        } else {
-            abAppend(ab, " ", 1); // fill the line with spaces
-            len++;
-        }
-    }
-    abAppend(ab, "\x1b[m", 3);
-    abAppend(ab, "\r\n", 2);
-}
+// // draw status bar on the bottom of the screen
+// // filename max 20 char
+// void editorDrawStatusBar(struct abuf *ab) {
+//     int len, rlen;
+//     char status[80], rstatus[80];
+//     abAppend(ab, "\x1b[7m", 4);
+//     len = snprintf(status, sizeof(status), "%.20s%s (%d bytes) - %d lines - branch: %s",
+//                    E.filename ? E.filename : "[No Name]",
+//                    E.dirty ? "*" : "",E.filesize, E.numrows, E.gitBranch);
+//     rlen = snprintf(rstatus, sizeof(rstatus), "%d,%d",
+//                         E.cx + 1, E.cy + 1);
+//     if (len > E.screencols)
+//         len = E.screencols;
+//     abAppend(ab, status, len);
+//     while (len < E.screencols) {
+//         if (E.screencols - len == rlen) {
+//             abAppend(ab, rstatus, rlen);
+//             break;
+//         } else {
+//             abAppend(ab, " ", 1); // fill the line with spaces
+//             len++;
+//         }
+//     }
+//     abAppend(ab, "\x1b[m", 3);
+//     abAppend(ab, "\r\n", 2);
+// }
 
 void editorUpdateRow(erow *row) {
     int tabs = 0;
@@ -589,21 +591,21 @@ char *editorPrompt(const char *prompt, void (*callback)(char *, int))  {
     }
 }
 
-// append data to buffer
-void abAppend(struct abuf *ab, const char *s, int len) {
-    char *new = realloc(ab->b, ab->len + len);
-    if (new == NULL) {
-        return; // to do handle with error
-    }
-    memcpy(&new[ab->len], s, len);
-    ab->b = new;
-    ab->len += len;
-}
+// // append data to buffer
+// void abAppend(struct abuf *ab, const char *s, int len) {
+//     char *new = realloc(ab->b, ab->len + len);
+//     if (new == NULL) {
+//         return; // to do handle with error
+//     }
+//     memcpy(&new[ab->len], s, len);
+//     ab->b = new;
+//     ab->len += len;
+// }
 
 // free the buffer
-void abFree(struct abuf *ab) {
-    free(ab->b);
-}
+// void abFree(struct abuf *ab) {
+//     free(ab->b);
+// }
 
 // fallback used in getwindowsize
 int getCursorPosition(int *rows, int *cols) {
