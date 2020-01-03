@@ -15,5 +15,5 @@ Progress:
 - [ ] auto indent
 - [ ] syntax highlight
 - [X] ctrl d -> duplicate line
-- [ ] ctrl r -> remove line? 
+- [X] ctrl r -> remove line
 - [ ] fix saving files

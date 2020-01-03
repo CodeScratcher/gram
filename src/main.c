@@ -138,7 +138,7 @@ char *editorPrompt(const char *prompt, void (*callback)(char *, int));
 void editorFindCallback(char *query, int key);
 // void getGitBranch();
 void resetFileSize(FILE *fp);
-void editorDuplicateLine();
+void editorDuplicateLine(int at);
 
 // debug utilities
 void dumpReceivedReadKey();
@@ -812,6 +812,10 @@ void editorProcessKeypress() {
 
         case CTRL_KEY('d'):
             editorDuplicateLine(E.cy);
+            break;
+
+        case CTRL_KEY('r'):
+            editorDelRow(E.cy);
             break;
 
         case CTRL_KEY('s'):
