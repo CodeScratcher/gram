@@ -1,7 +1,14 @@
-CFLAGS= -Wall -Wextra -pedantic -Os
+DEBUG=1
+CFLAGS= -Wall -Wextra -pedantic
 CFLAGSPEDANTIC= -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wwrite-strings -Wunreachable-code -Winit-self -fsanitize=address -std=c99
+COMMONFLAGS= -Os
 CC=gcc
-COMPILE=${CC} ${CFLAGS} ${CFLAGSPEDANTIC}
+
+ifeq (${DEBUG},1)
+	COMPILE=${CC} ${CFLAGS} ${CFLAGSPEDANTIC} ${COMMONFLAGS}
+else
+	COMPILE=${CC} ${COMMONFLAGS}
+endif
 
 gram: main.o bars.o editor.o buffer.o
 	${COMPILE} -o gram main.o bars.o editor.o buffer.o -lc
