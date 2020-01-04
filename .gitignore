@@ -5,6 +5,7 @@
 # Prerequisites
 test.txt
 test.c
+compileTest.sh
 gram
 *.d
 
