@@ -17,6 +17,7 @@
 
 #include "editor.h"
 #include "bars.h"
+#include "buffer.h"
 
 /*
 TODO:
@@ -818,6 +819,7 @@ void editorProcessKeypress() {
     switch (c) {
         case '\r':
             editorInsertNewline();
+            addOperationToBuffer(InsertLine,NULL,-1,-1);
             break;
         case CTRL_KEY('q'):
             if (E.dirty && quit_times > 0) {
@@ -840,11 +842,14 @@ void editorProcessKeypress() {
             exit(0);
             break;
 
+        // duplicate line
         case CTRL_KEY('d'):
             editorInsertRow(E.cy, E.row[E.cy].chars, E.row[E.cy].size);
+            addOperationToBuffer(DuplicateLine,NULL,-1,E.cy);
             break;
 
         case CTRL_KEY('r'):
+            addOperationToBuffer(DeleteLine, E.row[E.cy].chars, -1, E.cy);
             editorDelRow(E.cy);
             break;
 
@@ -854,6 +859,7 @@ void editorProcessKeypress() {
         
         case CTRL_KEY('t'):
             editorIndentLine();
+            addOperationToBuffer(IndentLine, NULL, -1, E.cy);
             break;
         
         case HOME_KEY:
@@ -875,6 +881,7 @@ void editorProcessKeypress() {
             if (c == DEL_KEY)
                 editorMoveCursor(ARROW_RIGHT,0);
             editorDelChar();
+            addOperationToBuffer(DeleteChar, E.row[E.cy].chars[E.cx], E.cx, E.cy);
             break;
         
         case PAGE_UP:
@@ -913,6 +920,7 @@ void editorProcessKeypress() {
 
         default:
             editorInsertChar(c);
+            addOperationToBuffer(InsertChar, c, E.cx, E.cy);
             break;
     }
     quit_times = EDITOR_QUIT_TIMES;

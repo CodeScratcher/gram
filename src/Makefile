@@ -3,14 +3,16 @@ CFLAGSPEDANTIC= -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wwrite-strings -
 CC=gcc
 COMPILE=${CC} ${CFLAGS} ${CFLAGSPEDANTIC}
 
-gram: main.o bars.o editor.o
-	${COMPILE} -o gram main.o bars.o editor.o -lc
-main.o: main.c editor.h bars.h
+gram: main.o bars.o editor.o buffer.o
+	${COMPILE} -o gram main.o bars.o editor.o buffer.o -lc
+main.o: main.c editor.h bars.h buffer.h
 	${COMPILE} -c main.c
 bars.o: bars.c bars.h editor.h
 	${COMPILE} -c bars.c  
 editor.o: editor.c editor.h
 	${COMPILE} -c editor.c  
+buffer.o: buffer.c buffer.h
+	${COMPILE} -c buffer.c
 
 .PHONY: clean
 
