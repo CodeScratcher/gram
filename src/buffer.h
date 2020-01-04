@@ -28,6 +28,8 @@ typedef struct buffer {
 } buffer;
 
 void initBuffer();
+void freeBuffer();
+void dumpBuffer();
 void addOperationToBuffer(int operation, char *data, int px, int py);
 
 buffer buff;
