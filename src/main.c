@@ -652,6 +652,13 @@ char *editorPrompt(const char *prompt, void (*callback)(char *, int))  {
 //     }
 // } 
 
+void editorIndentLine() {
+    int prev = E.cx;
+    E.cx = 0;
+    editorInsertChar('\t');
+    E.cx = prev + 1;
+}
+
 // prints rows
 void editorDrawRows(struct abuf *ab) {
     int y;

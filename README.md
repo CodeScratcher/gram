@@ -3,7 +3,12 @@
 A lightweight text editor based on https://viewsourcecode.org/snaptoken/kilo/index.html written in C. 
 Why? To use it to make quick changes on file on servers i do not have vim installed
 
-Progress:
+## Shortcuts
+* `CTRL + D`: duplicate line
+* `CTRL + R`: remove line
+* `CTRL + T`: indent line
+
+## Progress:
 - [ ] line numbers
 - [ ] libncurses?
 - [ ] undo with ctrl z
@@ -16,5 +21,6 @@ Progress:
 - [ ] syntax highlight
 - [X] ctrl d -> duplicate line
 - [X] ctrl r -> remove line
-- [ ] ctrl t -> indent line
+- [X] ctrl t -> indent line
 - [ ] fix saving files
+- [ ] enable go back 1 word (ctrl arrow)
