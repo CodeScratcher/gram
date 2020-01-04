@@ -16,4 +16,5 @@ Progress:
 - [ ] syntax highlight
 - [X] ctrl d -> duplicate line
 - [X] ctrl r -> remove line
+- [ ] ctrl t -> indent line
 - [ ] fix saving files

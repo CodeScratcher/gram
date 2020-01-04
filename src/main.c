@@ -138,7 +138,7 @@ char *editorPrompt(const char *prompt, void (*callback)(char *, int));
 void editorFindCallback(char *query, int key);
 // void getGitBranch();
 void resetFileSize(FILE *fp);
-void editorDuplicateLine(int at);
+void editorIndentLine();
 
 // debug utilities
 void dumpReceivedReadKey();
@@ -279,12 +279,6 @@ int editorRowRxToCx(erow *row, int rx) {
             return cx;
     }
     return cx;
-}
-
-// duplicate line
-// merge and compact with editorInsertRow?
-void editorDuplicateLine(int at) {
-    editorInsertRow(at,E.row[at].chars,E.row[at].size);
 }
 
 void editorInsertRow(int at, const char *s, size_t len) {
@@ -811,7 +805,7 @@ void editorProcessKeypress() {
             break;
 
         case CTRL_KEY('d'):
-            editorDuplicateLine(E.cy);
+            editorInsertRow(E.cy, E.row[E.cy].chars, E.row[E.cy].size);
             break;
 
         case CTRL_KEY('r'):
@@ -820,6 +814,10 @@ void editorProcessKeypress() {
 
         case CTRL_KEY('s'):
             editorSave();
+            break;
+        
+        case CTRL_KEY('t'):
+            editorIndentLine();
             break;
         
         case HOME_KEY:
