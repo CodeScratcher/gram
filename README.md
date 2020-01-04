@@ -28,3 +28,8 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 - [X] ctrl j -> remove indentation
 - [ ] fix saving files
 - [X] enable move 1 word (ctrl arrow)
+- [ ] comment line (detect file extension)
+
+## Note
+If something bad happens (errors that close the application), the terminal will be compromised. 
+Just type `reset` (it will not be displayed in the terminal) to restore the default terminal settings.
