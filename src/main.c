@@ -98,7 +98,7 @@ TODO:
 
 // // global variables
 // struct editorConfig E;
-const char *default_status_msg = "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find";
+const char *default_status_msg = "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find | Ctrl-D - Ctrl-R - Ctrl-T";
 
 // prototypes    
 void disableRawMode();
@@ -113,7 +113,7 @@ void editorRefreshScreen();
 int getCursorPosition(int *rows, int *cols);
 // void abAppend(struct abuf *ab, const char *s, int len);
 // void abFree(struct abuf *ab);
-void editorMoveCursor(int key);
+void editorMoveCursor(int key, int mode);
 void editorOpen();
 void editorInsertRow(int at, const char *s, size_t len) ;
 void editorScroll();
@@ -730,23 +730,52 @@ void editorRefreshScreen() {
     abFree(&ab);
 }
 
+// move one word right or left
+// merge with editorMoveCursor(int key) and then add 
+// another param, such as mode (boolean), where 0 means
+// single movement and 1 means word movement
+
+
 // editor cursor commands
-void editorMoveCursor(int key) {
+// int move: boolean
+// 0 -> single 
+// 1 -> move by a word (CTRL arrow)
+void editorMoveCursor(int key, int mode) {
     int rowlen;
     erow *row = (E.cy >= E.numrows) ? NULL : &E.row[E.cy];
 
     switch (key) {
         case ARROW_LEFT:
-            if (E.cx != 0) {
+            if (E.cx != 0 && mode == 0) {
                 E.cx--;
-            } else if (E.cy > 0) {
+            } 
+            else if (E.cx != 0 && mode == 1) {
+                if (E.row[E.cy].chars[E.cx] == ' ') {
+                    E.cx--;
+                }
+                else {
+                    while(E.cx > 0 && E.row[E.cy].chars[E.cx] != ' ') {
+                        E.cx --;
+                    }
+                }
+            }
+            else if (E.cy > 0) {
                 E.cy--;
                 E.cx = E.row[E.cy].size;
             }
             break;
         case ARROW_RIGHT:
-            if (row && E.cx < row->size) {
+            if (row && E.cx < row->size && mode == 0) {
                 E.cx++;
+            } 
+            else if (row && E.cx < row->size && mode == 1) {
+                if (E.row[E.cy].chars[E.cx] == ' ') {
+                    E.cx++;
+                } else {
+                    while (E.cx < row->size && E.row[E.cy].chars[E.cx] != ' ') {
+                        E.cx++;
+                    }
+                }
             } 
             else if (row && E.cx == row->size) {
                 E.cy++;
@@ -844,7 +873,7 @@ void editorProcessKeypress() {
         case CTRL_KEY('h'):
         case DEL_KEY:
             if (c == DEL_KEY)
-                editorMoveCursor(ARROW_RIGHT);
+                editorMoveCursor(ARROW_RIGHT,0);
             editorDelChar();
             break;
         
@@ -860,13 +889,22 @@ void editorProcessKeypress() {
             }
             times = E.screenrows;
             while (times--)
-                editorMoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
+                editorMoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN,0);
         } break;
+
         case ARROW_UP:
         case ARROW_DOWN:
         case ARROW_LEFT:
         case ARROW_RIGHT:
-            editorMoveCursor(c);
+            editorMoveCursor(c,0);
+            break;
+
+        case CTRL_KEY('p'):
+            editorMoveCursor(ARROW_LEFT, 1);
+            break;
+
+        case CTRL_KEY('n'):
+            editorMoveCursor(ARROW_RIGHT, 1);
             break;
 
         case CTRL_KEY('l'):

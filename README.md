@@ -7,6 +7,8 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 * `CTRL + D`: duplicate line
 * `CTRL + R`: remove line
 * `CTRL + T`: indent line
+* `CTRL + P`: step one word left
+* `CTRL + N`: step one word right
 
 ## Progress:
 - [ ] line numbers
@@ -23,4 +25,4 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 - [X] ctrl r -> remove line
 - [X] ctrl t -> indent line
 - [ ] fix saving files
-- [ ] enable go back 1 word (ctrl arrow)
+- [X] enable move 1 word (ctrl arrow)
