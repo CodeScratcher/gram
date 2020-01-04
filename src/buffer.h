@@ -6,7 +6,8 @@ enum operations { NOP,
                   InsertLine,
                   DeleteLine,
                   DuplicateLine,
-                  IndentLine 
+                  IndentLine,
+                  UnindentLine
                 };
 
 // not very portable...

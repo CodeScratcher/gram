@@ -25,6 +25,6 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 - [X] ctrl d -> duplicate line
 - [X] ctrl r -> remove line
 - [X] ctrl t -> indent line
-- [ ] ctrl j -> remove indentation
+- [X] ctrl j -> remove indentation
 - [ ] fix saving files
 - [X] enable move 1 word (ctrl arrow)

@@ -140,6 +140,7 @@ void editorFindCallback(char *query, int key);
 // void getGitBranch();
 void resetFileSize(FILE *fp);
 void editorIndentLine();
+void editorUnindentLine();
 
 // debug utilities
 void dumpReceivedReadKey();
@@ -660,6 +661,12 @@ void editorIndentLine() {
     E.cx = prev + 1;
 }
 
+void editorUnindentLine() {
+    if(E.row[E.cy].chars[0] == '\t') {
+        editorRowDelChar(&E.row[E.cy],0);
+    }
+}
+
 // prints rows
 void editorDrawRows(struct abuf *ab) {
     int y;
@@ -743,6 +750,7 @@ void editorRefreshScreen() {
 // 1 -> move by a word (CTRL arrow)
 void editorMoveCursor(int key, int mode) {
     int rowlen;
+    
     erow *row = (E.cy >= E.numrows) ? NULL : &E.row[E.cy];
 
     switch (key) {
@@ -804,6 +812,8 @@ void editorMoveCursor(int key, int mode) {
 // handles ctrl combinations and other special keys
 void editorProcessKeypress() {
     static int quit_times = EDITOR_QUIT_TIMES;
+    // char str[2];
+
     int c = editorReadKey();
 
     if(PRINT_KEY) {
@@ -819,7 +829,7 @@ void editorProcessKeypress() {
     switch (c) {
         case '\r':
             editorInsertNewline();
-            addOperationToBuffer(InsertLine,NULL,-1,-1);
+            // addOperationToBuffer(InsertLine,NULL,-1,-1);
             break;
         case CTRL_KEY('q'):
             if (E.dirty && quit_times > 0) {
@@ -845,23 +855,32 @@ void editorProcessKeypress() {
         // duplicate line
         case CTRL_KEY('d'):
             editorInsertRow(E.cy, E.row[E.cy].chars, E.row[E.cy].size);
-            addOperationToBuffer(DuplicateLine,NULL,-1,E.cy);
+            // addOperationToBuffer(DuplicateLine,NULL,-1,E.cy);
             break;
 
+        // remove line
         case CTRL_KEY('r'):
-            addOperationToBuffer(DeleteLine, E.row[E.cy].chars, -1, E.cy);
+            // addOperationToBuffer(DeleteLine, E.row[E.cy].chars, -1, E.cy);
             editorDelRow(E.cy);
             break;
 
+        // save
         case CTRL_KEY('s'):
             editorSave();
             break;
         
+        // indent line
         case CTRL_KEY('t'):
             editorIndentLine();
-            addOperationToBuffer(IndentLine, NULL, -1, E.cy);
+            // addOperationToBuffer(IndentLine, NULL, -1, E.cy);
             break;
         
+        // unindent line
+        case CTRL_KEY('j'):
+            editorUnindentLine();
+            // addOperationToBuffer(UnindentLine, NULL, -1, E.cy);
+            break;
+
         case HOME_KEY:
             E.cx = 0;
             break;
@@ -881,7 +900,9 @@ void editorProcessKeypress() {
             if (c == DEL_KEY)
                 editorMoveCursor(ARROW_RIGHT,0);
             editorDelChar();
-            addOperationToBuffer(DeleteChar, E.row[E.cy].chars[E.cx], E.cx, E.cy);
+            // str[0] = E.row[E.cy].chars[E.cx]; 
+            // str[1] = '\0';
+            // addOperationToBuffer(DeleteChar, str, E.cx, E.cy);
             break;
         
         case PAGE_UP:
@@ -920,7 +941,9 @@ void editorProcessKeypress() {
 
         default:
             editorInsertChar(c);
-            addOperationToBuffer(InsertChar, c, E.cx, E.cy);
+            // str[0] = c;
+            // str[1] = '\0';
+            // addOperationToBuffer(InsertChar, str, E.cx, E.cy);
             break;
     }
     quit_times = EDITOR_QUIT_TIMES;
