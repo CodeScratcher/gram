@@ -4,11 +4,16 @@ A lightweight text editor based on https://viewsourcecode.org/snaptoken/kilo/ind
 Why? To use it to make quick changes on file on servers i do not have vim installed
 
 ## Shortcuts
+* `CTRL + B`: move to the beginning of the line
+* `CTRL + C`: copy current word
 * `CTRL + D`: duplicate line
+* `CTRL + E`: move to the end of the line
+* `CTRL + J`: remove indentation
+* `CTRL + N`: step one word right
+* `CTRL + P`: step one word left
 * `CTRL + R`: remove line
 * `CTRL + T`: indent line
-* `CTRL + P`: step one word left
-* `CTRL + N`: step one word right
+* `CTRL + V`: paste the content of the buffer
 
 ## Progress:
 - [ ] line numbers
@@ -25,8 +30,10 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 - [X] ctrl r -> remove line
 - [X] ctrl t -> indent line
 - [X] ctrl j -> remove indentation
-- [ ] ctrl c -> copy current word
-- [ ] ctrl v -> paste buffer (copy) content
+- [X] ctrl c -> copy current word
+- [X] ctrl v -> paste buffer (copy) content
+- [X] ctrl b -> move to beginning of the line
+- [X] ctrl e -> move to the end of the line
 - [ ] display buffer content in status bar
 - [ ] ctrl h -> comment current line
 - [ ] file extension detection used to comment line

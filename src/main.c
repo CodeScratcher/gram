@@ -861,6 +861,16 @@ void editorProcessKeypress() {
             }
             break;
 
+        // move beginning line
+        case CTRL_KEY('b'):
+            E.cx = 0;
+            break;
+        
+        // move end line
+        case CTRL_KEY('e'):
+            E.cx = E.row[E.cy].size;
+            break;
+
         // save
         case CTRL_KEY('s'):
             editorSave();
