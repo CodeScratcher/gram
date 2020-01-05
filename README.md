@@ -34,7 +34,7 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 - [X] ctrl v -> paste buffer (copy) content
 - [X] ctrl b -> move to beginning of the line
 - [X] ctrl e -> move to the end of the line
-- [ ] display buffer content in status bar
+- [X] display buffer content in status bar
 - [ ] ctrl h -> comment current line
 - [ ] file extension detection used to comment line
 - [ ] fix saving files
