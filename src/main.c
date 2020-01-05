@@ -163,25 +163,31 @@ char *extractWordFromLine(char *line, int len, int pos) {
     if (pos > len) {
         return NULL;
     }
-    // move right and left to find a space
-    while (i >= 0 && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
-        i--;
+    else if (line[pos] == ' ' || line[pos] == '\n' || line[pos] == '\t') {
+        word = (char *)malloc(sizeof(char) * 2);
+        word[0] = ' ';
+        word[1] = '\0';
     }
-    lower = i + 1;
-    i = pos;
-    while (i < len && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
-        i++;
+    else {
+        // move right and left to find a space
+        while (i >= 0 && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+            i--;
+        }
+        lower = i + 1;
+        i = pos;
+        while (i < len && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+            i++;
+        }
+        upper = i;
+        // quick fix if the cursor position is on space
+        if (lower == upper + 1) {
+            lower = upper;
+        }
+        // extract the word
+        word = (char *)malloc(sizeof(char) * (upper - lower + 1));
+        strncpy(word, line + lower, upper - lower);
+        word[upper - lower] = '\0';
     }
-    upper = i;
-    // quick fix if the cursor position is on space
-    if (lower == upper + 1) {
-        lower = upper;
-    }
-    // extract the word
-    word = (char *)malloc(sizeof(char) * (upper - lower + 1));
-    strncpy(word, line + lower, upper - lower);
-    word[upper - lower] = '\0';
-
     return word;
 }
 
