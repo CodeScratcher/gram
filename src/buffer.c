@@ -1,15 +1,17 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "buffer.h"
 
+// causes errors, maye the bug is somewhere else
 void initBuffer() {
     int i;
     for (i = 0; i < MAX_BUFSIZE; i++) {
-        buff.oplist[i].data = NULL;
+        // buff.oplist[i].data = NULL;
         buff.oplist[i].operation = NOP;
-        buff.oplist[buff.bufsize].px = -2; // value that must be modified
-        buff.oplist[buff.bufsize].py = -2;
+        buff.oplist[i].px = -2; // value that must be modified
+        buff.oplist[i].py = -2;
     }
     buff.bufsize = 0;
 }

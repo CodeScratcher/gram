@@ -141,6 +141,9 @@ void editorFindCallback(char *query, int key);
 void resetFileSize(FILE *fp);
 void editorIndentLine();
 void editorUnindentLine();
+void editorCommentLine();
+
+char *extractWordFromLine(char *line, int len, int pos);
 
 // debug utilities
 void dumpReceivedReadKey();
@@ -153,66 +156,34 @@ void dumpReceivedReadKey(int key) {
     editorSetStatusMessage(dest);
 }
 
-// void initEditor() {
-//     E.cx = 0;
-//     E.cy = 0;
-//     E.rx = 0;
-//     E.rowoff = 0;
-//     E.coloff = 0;
-//     E.numrows = 0;
-//     E.dirty = 0;
-//     E.row = NULL;
-//     E.filename = NULL;
-//     E.gitBranch = NULL;
-//     E.statusmsg[0] = '\0';
-//     E.statusmsg_time = 0;
-//     if (getWindowSize(&E.screenrows, &E.screencols) == -1) {
-//         die("getWindowSize");
-//     }
-//     // room for the status bar on the last line
-//     // and the status message on the second to last
-//     E.screenrows -= 2;
-//     E.filesize = 0; 
+char *extractWordFromLine(char *line, int len, int pos) {
+    int lower, upper;
+    int i = pos;
+    char *word = NULL;
+    if (pos > len) {
+        return NULL;
+    }
+    // move right and left to find a space
+    while (i >= 0 && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+        i--;
+    }
+    lower = i + 1;
+    i = pos;
+    while (i < len && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+        i++;
+    }
+    upper = i;
+    // quick fix if the cursor position is on space
+    if (lower == upper + 1) {
+        lower = upper;
+    }
+    // extract the word
+    word = (char *)malloc(sizeof(char) * (upper - lower + 1));
+    strncpy(word, line + lower, upper - lower);
+    word[upper - lower] = '\0';
 
-//     getGitBranch();
-// }
-
-// // creates a child process that exec git branch
-// void getGitBranch() {
-//     int fd[2];
-//     int pid;
-//     int nbytes;
-//     char readbuffer[80];
-
-//     if(pipe(fd) < 0) {
-//         return;
-//     }
-
-//     pid = fork();
-
-//     if (pid == 0) {
-//         // child process
-//         close(fd[0]); // close input
-//         dup2(fd[1], 1);
-//         close(fd[1]);
-//         // execute the command git rev-parse --abbrev-ref HEAD
-//         execlp("git", "git", "rev-parse", "--abbrev-ref", "HEAD", NULL);
-//     } 
-//     else if (pid > 0) {
-//         // parent
-//         close(fd[1]); // close output
-//         // wait(NULL);
-//         nbytes = read(fd[0], readbuffer, sizeof(readbuffer));
-//         if(nbytes > 0) {
-//             readbuffer[strlen(readbuffer) - 1] = '\0';
-//             // editorSetStatusMessage(readbuffer);
-//             if (!strstr(readbuffer, "Not a git repository")) {
-//                 free(E.gitBranch);
-//                 E.gitBranch = strdup(readbuffer);
-//             }
-//         }
-//     }
-// }
+    return word;
+}
 
 void editorFindCallback(char *query, int key) {
     static int last_match = -1;
@@ -831,6 +802,8 @@ void editorProcessKeypress() {
             editorInsertNewline();
             // addOperationToBuffer(InsertLine,NULL,-1,-1);
             break;
+        
+        // close
         case CTRL_KEY('q'):
             if (E.dirty && quit_times > 0) {
                 editorSetStatusMessage("Warning - File has unsaved changes. "
@@ -849,7 +822,9 @@ void editorProcessKeypress() {
             if(E.tempfilename != NULL) {
                 remove(E.tempfilename);
             }
-            exit(0);
+            freeBuffer(); // do it in a function
+            free(E.copyBuffer); // do it in a function
+            exit(0); // i do not like it...
             break;
 
         // duplicate line
@@ -862,6 +837,17 @@ void editorProcessKeypress() {
         case CTRL_KEY('r'):
             // addOperationToBuffer(DeleteLine, E.row[E.cy].chars, -1, E.cy);
             editorDelRow(E.cy);
+            break;
+
+        // copy word
+        case CTRL_KEY('c'):
+            free(E.copyBuffer);
+            E.copyBuffer = extractWordFromLine(E.row[E.cy].chars,E.row[E.cy].size,E.cx);
+            break;
+            
+        // paste word
+        case CTRL_KEY('v'):
+            // TODO
             break;
 
         // save

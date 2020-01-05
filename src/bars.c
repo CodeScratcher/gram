@@ -14,9 +14,9 @@ void editorDrawStatusBar(struct abuf *ab) {
     int len, rlen;
     char status[80], rstatus[80];
     abAppend(ab, "\x1b[7m", 4);
-    len = snprintf(status, sizeof(status), "%.20s%s (%d bytes) - %d lines - branch: %s",
+    len = snprintf(status, sizeof(status), "%.20s%s (%d bytes) - %d lines - branch: %s - buffer: %s",
                    E.filename ? E.filename : "[No Name]",
-                   E.dirty ? "*" : "", E.filesize, E.numrows, E.gitBranch);
+                   E.dirty ? "*" : "", E.filesize, E.numrows, E.gitBranch, E.copyBuffer);
     rlen = snprintf(rstatus, sizeof(rstatus), "%d,%d",
                     E.cx + 1, E.cy + 1);
     if (len > E.screencols)

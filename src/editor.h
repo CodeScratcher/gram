@@ -74,6 +74,7 @@ struct editorConfig {
     int filesize;       // <-------- integer overflow if the file is big
     char *filename;     // current filename
     char *tempfilename; // filename saved
+    char *copyBuffer; // buffer that store ctrl c
     char statusmsg[80];
     time_t statusmsg_time;
     erow *row; // content of the rows

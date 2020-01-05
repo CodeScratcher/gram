@@ -1,4 +1,5 @@
 #include "editor.h"
+#include "buffer.h"
 
 // append data to buffer
 void abAppend(struct abuf *ab, const char *s, int len) {
@@ -26,6 +27,7 @@ void initEditor() {
     E.dirty = 0;
     E.row = NULL;
     E.filename = NULL;
+    E.copyBuffer = NULL;
     E.gitBranch = NULL;
     E.statusmsg[0] = '\0';
     E.statusmsg_time = 0;
@@ -38,6 +40,7 @@ void initEditor() {
     E.filesize = 0;
 
     getGitBranch();
+    // initBuffer(); // causes errors
 }
 
 void die(const char *s) {

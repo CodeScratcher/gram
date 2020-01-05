@@ -26,7 +26,7 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 - [X] ctrl t -> indent line
 - [X] ctrl j -> remove indentation
 - [ ] ctrl c -> copy current word
-- [ ] ctrl v -> paste buffer content
+- [ ] ctrl v -> paste buffer (copy) content
 - [ ] display buffer content in status bar
 - [ ] ctrl h -> comment current line
 - [ ] file extension detection used to comment line
