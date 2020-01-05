@@ -790,6 +790,7 @@ void editorMoveCursor(int key, int mode) {
 void editorProcessKeypress() {
     static int quit_times = EDITOR_QUIT_TIMES;
     // char str[2];
+    int i;
 
     int c = editorReadKey();
 
@@ -853,7 +854,11 @@ void editorProcessKeypress() {
             
         // paste word
         case CTRL_KEY('v'):
-            // TODO
+            if(E.copyBuffer) {
+                for(i = 0; i < (int) strlen(E.copyBuffer); i++) {
+                    editorInsertChar(E.copyBuffer[i]);
+                }
+            }
             break;
 
         // save
