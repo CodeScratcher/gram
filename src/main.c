@@ -20,87 +20,7 @@
 #include "buffer.h"
 #include "utils.h"
 
-/*
-TODO:
-- line numbers
-- libncurses?
-- undo
-- split in multiple files
-- remove all break in loop statement (i do not like them)
-- handle F1 - F10?
-- copy paste ctrl c ctrl v
-- config file
-- auto indent
-- syntax highlight
-- ctrl d -> delete line
-- ctrl r -> duplicate line? 
-*/
-
-// #define EDITOR_VERSION "0.0.1"
-// #define EDITOR_TAB_STOP 4
-// // number of times the user needs to press ctrl q to close without saving
-// #define EDITOR_QUIT_TIMES 3 
-
-// // to mirror ctrl key features
-// #define CTRL_KEY(k) ((k)&0x1f)
-// // init buffer empty
-// #define ABUF_INIT {NULL, 0}
-
-// // debug flag
-// #define PRINT_KEY 0
-
-// enum editorKey {
-//     BACKSPACE = 127,
-//     ARROW_LEFT = 1000,
-//     ARROW_RIGHT,
-//     ARROW_UP,
-//     ARROW_DOWN,
-//     DEL_KEY,
-//     HOME_KEY,
-//     END_KEY,
-//     PAGE_UP,
-//     PAGE_DOWN
-// };
-
-// // buffer that stores what needs to be printed on screen
-// // to avoid multiple write, we append the data to a buffer
-// // and then write the buffer
-// struct abuf {
-//     char *b;
-//     int len;
-// };
-
-// // to store row of text
-// typedef struct erow {
-//     int size;
-//     int rsize;
-//     char *chars;
-//     char *render;
-// } erow;
-
-// // editor info
-// struct editorConfig {
-//     int cx, cy; // cursor position
-//     int rx; // for tabs and render
-//     int rowoff; // for vertical scrolling
-//     int coloff; // for horizontal scrolling
-//     int screenrows;
-//     int screencols;
-//     int numrows; // number of rows
-//     int dirty; // file saved or not
-//     int filesize; // <-------- integer overflow if the file is big
-//     char *filename; // current filename
-//     char *tempfilename; // filename saved
-//     char statusmsg[80];
-//     time_t statusmsg_time;
-//     erow *row; // content of the rows
-//     char *gitBranch;
-//     struct termios orig_termios;
-// };
-
-// // global variables
-// struct editorConfig E;
-const char *default_status_msg = "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find | Ctrl-D - Ctrl-R - Ctrl-T";
+const char *default_status_msg = "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find |";
 
 // prototypes    
 void disableRawMode();
@@ -142,8 +62,8 @@ void resetFileSize(FILE *fp);
 void editorIndentLine();
 void editorUnindentLine();
 void editorCommentLine();
-
 char *extractWordFromLine(char *line, int len, int pos);
+void editorShowShortcutsList();
 
 // debug utilities
 void dumpReceivedReadKey();
@@ -351,26 +271,6 @@ void editorOpen(char *filename) {
     E.dirty = 0;
 }
 
-// void editorSetStatusMessage(const char *fmt, ...) {
-//     va_list ap;
-//     va_start(ap, fmt);
-//     vsnprintf(E.statusmsg, sizeof(E.statusmsg), fmt, ap);
-//     va_end(ap);
-//     E.statusmsg_time = time(NULL);
-// }
-
-// void editorDrawMessageBar(struct abuf *ab) {
-//     int msglen;
-//     abAppend(ab, "\x1b[K", 3);
-//     msglen = strlen(E.statusmsg);
-//     if (msglen > E.screencols)
-//         msglen = E.screencols;
-//     // status message only for 5 seconds
-//     // if (msglen && time(NULL) - E.statusmsg_time < 5)
-//     if (msglen)
-//         abAppend(ab, E.statusmsg, msglen);
-// }
-
 void editorScroll() {
     E.rx = 0;
     if (E.cy < E.numrows) {
@@ -390,33 +290,6 @@ void editorScroll() {
         E.coloff = E.rx - E.screencols + 1;
     }
 }
-
-// // draw status bar on the bottom of the screen
-// // filename max 20 char
-// void editorDrawStatusBar(struct abuf *ab) {
-//     int len, rlen;
-//     char status[80], rstatus[80];
-//     abAppend(ab, "\x1b[7m", 4);
-//     len = snprintf(status, sizeof(status), "%.20s%s (%d bytes) - %d lines - branch: %s",
-//                    E.filename ? E.filename : "[No Name]",
-//                    E.dirty ? "*" : "",E.filesize, E.numrows, E.gitBranch);
-//     rlen = snprintf(rstatus, sizeof(rstatus), "%d,%d",
-//                         E.cx + 1, E.cy + 1);
-//     if (len > E.screencols)
-//         len = E.screencols;
-//     abAppend(ab, status, len);
-//     while (len < E.screencols) {
-//         if (E.screencols - len == rlen) {
-//             abAppend(ab, rstatus, rlen);
-//             break;
-//         } else {
-//             abAppend(ab, " ", 1); // fill the line with spaces
-//             len++;
-//         }
-//     }
-//     abAppend(ab, "\x1b[m", 3);
-//     abAppend(ab, "\r\n", 2);
-// }
 
 void editorUpdateRow(erow *row) {
     int tabs = 0;
@@ -570,66 +443,6 @@ char *editorPrompt(const char *prompt, void (*callback)(char *, int))  {
             callback(buf, c);
     }
 }
-
-// // append data to buffer
-// void abAppend(struct abuf *ab, const char *s, int len) {
-//     char *new = realloc(ab->b, ab->len + len);
-//     if (new == NULL) {
-//         return; // to do handle with error
-//     }
-//     memcpy(&new[ab->len], s, len);
-//     ab->b = new;
-//     ab->len += len;
-// }
-
-// free the buffer
-// void abFree(struct abuf *ab) {
-//     free(ab->b);
-// }
-
-// // fallback used in getwindowsize
-// int getCursorPosition(int *rows, int *cols) {
-//     char buf[32];
-//     unsigned int i = 0;
-    
-//     if(write(STDOUT_FILENO, "\x1b[6n", 4) != 4) {
-//         return -1;
-//     }
-
-//     while(i < sizeof(buf) - 1) {
-//         if (read(STDIN_FILENO, &buf[i], 1) != 1) break;
-//         if (buf[i] == 'R') break;
-//         i++;
-//     }
-//     buf[i] = '\0';
-
-//     if(buf[0] != '\x1b' || buf[1] != '[') {
-//         return -1;
-//     }
-
-//     if(sscanf(&buf[2], "%d;%d", rows, cols) != 2) {
-//         return -1;
-//     }
-    
-//     return 0;
-// }
-
-// // get the size of the terminal
-// int getWindowSize(int *rows, int *cols) {
-//     struct winsize ws;
-
-//     if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) {
-//         if (write(STDOUT_FILENO, "\x1b[999C\x1b[999B", 12) != 12) {
-//             return -1;
-//         }
-//         return getCursorPosition(rows, cols);
-//     } 
-//     else {
-//         *cols = ws.ws_col;
-//         *rows = ws.ws_row;
-//         return 0;
-//     }
-// } 
 
 void editorIndentLine() {
     int prev = E.cx;
@@ -890,41 +703,57 @@ void editorProcessKeypress() {
             // addOperationToBuffer(UnindentLine, NULL, -1, E.cy);
             break;
 
+        // move line up
+        case CTRL_KEY('w'): {
+            int len;
+            char *templine;
+            if(E.cy > 0) {
+                len = E.row[E.cy].size;
+                templine = (char *) malloc(sizeof(char)*(len + 1));
+                strcpy(templine,E.row[E.cy].chars);
+                editorDelRow(E.cy);
+                editorInsertRow(E.cy-1,templine,len+1);
+                free(templine);
+            }
+        }
+        break;
+
+
         // comment line
         case CTRL_KEY('i'): {
-                int prev = E.cx;
-                int commentPosition = 0;
-                int fileExt = getFileCommentChars(E.filename);
-                // now the comment position depends from the current indentation
-                while(E.row[E.cy].chars[commentPosition] == '\t' || E.row[E.cy].chars[commentPosition] == ' ') {
-                    commentPosition++;
-                }
-
-                E.cx = commentPosition;
-
-                switch (fileExt) {
-                    case DOUBLESLASH:
-                        editorInsertChar('/');
-                        editorInsertChar('/');
-                        editorInsertChar(' ');
-                        E.cx = prev + 3;
-                        break;
-                    case PERCENT:
-                        editorInsertChar('%');
-                        editorInsertChar(' ');
-                        E.cx = prev + 2;
-                        break;
-                    case HASH:
-                        editorInsertChar('#');
-                        editorInsertChar(' ');
-                        E.cx = prev + 2;
-                        break;
-                    default:
-                        break;
-                }
-
+            int prev = E.cx;
+            int commentPosition = 0;
+            int fileExt = getFileCommentChars(E.filename);
+            // now the comment position depends from the current indentation
+            while(E.row[E.cy].chars[commentPosition] == '\t' || E.row[E.cy].chars[commentPosition] == ' ') {
+                commentPosition++;
             }
-            break;     
+
+            E.cx = commentPosition;
+
+            switch (fileExt) {
+            case DOUBLESLASH:
+                editorInsertChar('/');
+                editorInsertChar('/');
+                editorInsertChar(' ');
+                E.cx = prev + 3;
+                break;
+            case PERCENT:
+                editorInsertChar('%');
+                editorInsertChar(' ');
+                E.cx = prev + 2;
+                break;
+            case HASH:
+                editorInsertChar('#');
+                editorInsertChar(' ');
+                E.cx = prev + 2;
+                break;
+            default:
+                break;
+            }
+
+        }
+        break;     
 
         // uncomment line
         case CTRL_KEY('u'): {
@@ -1191,18 +1020,6 @@ void editorSave() {
     free(buf);
     editorSetStatusMessage("Can't save! I/O error: %s", strerror(errno));
 }
-
-// prints the string and dies
-// void die(const char *s) {
-//     if(write(STDOUT_FILENO, "\x1b[2J", 4) < 0) {
-//         perror(strerror(errno));
-//     }
-//     if(write(STDOUT_FILENO, "\x1b[H", 3) < 0) {
-//         perror(strerror(errno));
-//     }
-//     perror(s);
-//     exit(1);
-// }
 
 void disableRawMode() {
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1) {
