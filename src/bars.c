@@ -1,3 +1,7 @@
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "bars.h"
 
 void editorSetStatusMessage(const char *fmt, ...) {
