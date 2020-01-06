@@ -1,5 +1,6 @@
-#include "editor.h"
 #include "buffer.h"
+#include "editor.h"
+#include "utils.h"
 
 // append data to buffer
 void abAppend(struct abuf *ab, const char *s, int len) {
@@ -28,7 +29,7 @@ void initEditor() {
     E.row = NULL;
     E.filename = NULL;
     E.copyBuffer = NULL;
-    E.gitBranch = NULL;
+    E.gitBranch = getGitBranch();
     E.statusmsg[0] = '\0';
     E.statusmsg_time = 0;
     if (getWindowSize(&E.screenrows, &E.screencols) == -1) {
@@ -39,7 +40,6 @@ void initEditor() {
     E.screenrows -= 2;
     E.filesize = 0;
 
-    getGitBranch();
     // initBuffer(); // causes errors
 }
 
@@ -52,42 +52,6 @@ void die(const char *s) {
     }
     perror(s);
     exit(1);
-}
-
-// creates a child process that exec git branch
-void getGitBranch() {
-    int fd[2];
-    int pid;
-    int nbytes;
-    char readbuffer[80];
-
-    if (pipe(fd) < 0) {
-        return;
-    }
-
-    pid = fork();
-
-    if (pid == 0) {
-        // child process
-        close(fd[0]); // close input
-        dup2(fd[1], 1);
-        close(fd[1]);
-        // execute the command git rev-parse --abbrev-ref HEAD
-        execlp("git", "git", "rev-parse", "--abbrev-ref", "HEAD", NULL);
-    } else if (pid > 0) {
-        // parent
-        close(fd[1]); // close output
-        // wait(NULL);
-        nbytes = read(fd[0], readbuffer, sizeof(readbuffer));
-        if (nbytes > 0) {
-            readbuffer[strlen(readbuffer) - 1] = '\0';
-            // editorSetStatusMessage(readbuffer);
-            if (!strstr(readbuffer, "Not a git repository")) {
-                free(E.gitBranch);
-                E.gitBranch = strdup(readbuffer);
-            }
-        }
-    }
 }
 
 // fallback used in getwindowsize

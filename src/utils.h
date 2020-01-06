@@ -3,3 +3,4 @@ enum extensions {
 };
 
 int getFileCommentChars(char *filename);
+char *getGitBranch();

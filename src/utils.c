@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "utils.h"
 
@@ -40,4 +42,46 @@ int getFileCommentChars(char *filename) {
     } else {
         return NOEXT;
     }
+}
+
+// creates a child process that exec git branch
+char *getGitBranch() {
+    int fd[2];
+    int pid;
+    int nbytes;
+    int maxLenGitBranchName = 80;
+    char *readbuffer = NULL;
+
+    if (pipe(fd) < 0) {
+        return NULL;
+    }
+
+    pid = fork();
+
+    if (pid == 0) {
+        // child process
+        close(fd[0]); // close input
+        dup2(fd[1], 1);
+        close(fd[1]);
+        // execute the command git rev-parse --abbrev-ref HEAD
+        execlp("git", "git", "rev-parse", "--abbrev-ref", "HEAD", NULL);
+    } else if (pid > 0) {
+        // parent
+        close(fd[1]); // close output
+        // wait(NULL);
+        readbuffer = (char *)malloc(sizeof(char) * maxLenGitBranchName);
+        nbytes = read(fd[0], readbuffer, (maxLenGitBranchName - 1));
+        if (nbytes > 0) {
+            readbuffer[nbytes - 1] = '\0';
+            // editorSetStatusMessage(readbuffer);
+            if (!strstr(readbuffer, "Not a git repository")) {
+                // free(E.gitBranch);
+                // E.gitBranch = strdup(readbuffer);
+                return readbuffer;
+            }
+        }
+    }
+
+    free(readbuffer);
+    return NULL;
 }

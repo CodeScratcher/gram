@@ -138,7 +138,6 @@ void editorFind();
 int editorRowRxToCx(erow *row, int rx);
 char *editorPrompt(const char *prompt, void (*callback)(char *, int));
 void editorFindCallback(char *query, int key);
-// void getGitBranch();
 void resetFileSize(FILE *fp);
 void editorIndentLine();
 void editorUnindentLine();
@@ -830,8 +829,10 @@ void editorProcessKeypress() {
             if(E.tempfilename != NULL) {
                 remove(E.tempfilename);
             }
-            freeBuffer(); // do it in a function
-            free(E.copyBuffer); // do it in a function
+            // do all free in a function
+            freeBuffer(); 
+            free(E.copyBuffer);
+            free(E.gitBranch);
             exit(0); // i do not like it...
             break;
 
