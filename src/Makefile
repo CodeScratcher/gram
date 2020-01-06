@@ -10,8 +10,8 @@ else
 	COMPILE=${CC} ${COMMONFLAGS}
 endif
 
-gram: main.o bars.o editor.o buffer.o
-	${COMPILE} -o gram main.o bars.o editor.o buffer.o -lc
+gram: main.o bars.o editor.o buffer.o utils.o
+	${COMPILE} -o gram main.o bars.o editor.o buffer.o utils.o -lc
 main.o: main.c editor.h bars.h buffer.h
 	${COMPILE} -c main.c
 bars.o: bars.c bars.h editor.h
@@ -20,6 +20,8 @@ editor.o: editor.c editor.h
 	${COMPILE} -c editor.c  
 buffer.o: buffer.c buffer.h
 	${COMPILE} -c buffer.c
+utils.o: utils.c utils.h
+	${COMPILE} -c utils.c
 
 .PHONY: clean
 

@@ -18,6 +18,7 @@
 #include "editor.h"
 #include "bars.h"
 #include "buffer.h"
+#include "utils.h"
 
 /*
 TODO:
@@ -887,6 +888,92 @@ void editorProcessKeypress() {
             editorUnindentLine();
             // addOperationToBuffer(UnindentLine, NULL, -1, E.cy);
             break;
+
+        // comment line
+        case CTRL_KEY('i'): {
+                int prev = E.cx;
+                int commentPosition = 0;
+                int fileExt = getFileCommentChars(E.filename);
+                // now the comment position depends from the current indentation
+                while(E.row[E.cy].chars[commentPosition] == '\t' || E.row[E.cy].chars[commentPosition] == ' ') {
+                    commentPosition++;
+                }
+
+                E.cx = commentPosition;
+
+                switch (fileExt) {
+                    case DOUBLESLASH:
+                        editorInsertChar('/');
+                        editorInsertChar('/');
+                        editorInsertChar(' ');
+                        E.cx = prev + 3;
+                        break;
+                    case PERCENT:
+                        editorInsertChar('%');
+                        editorInsertChar(' ');
+                        E.cx = prev + 2;
+                        break;
+                    case HASH:
+                        editorInsertChar('#');
+                        editorInsertChar(' ');
+                        E.cx = prev + 2;
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+            break;     
+
+        // uncomment line
+        case CTRL_KEY('u'): {
+                int commentPosition = 0;
+                int prev = E.cx;
+                int space = 0;
+                int commentChars = getFileCommentChars(E.filename);
+
+                while (E.row[E.cy].chars[commentPosition] == '\t' || E.row[E.cy].chars[commentPosition] == ' ') {
+                    commentPosition++;
+                }
+
+                E.cx = commentPosition;
+                
+                switch (commentChars) {
+                    case DOUBLESLASH:
+                        if (E.row[E.cy].chars[commentPosition] == '/' && E.row[E.cy].chars[commentPosition + 1] == '/') {
+                            if(E.row[E.cy].chars[commentPosition + 2] == ' ') {
+                                space = 1;
+                            }
+                            editorRowDelChar(&E.row[E.cy],commentPosition);
+                            editorRowDelChar(&E.row[E.cy],commentPosition);
+                        }
+                        if(space == 1) {
+                            editorRowDelChar(&E.row[E.cy], commentPosition);
+                        }
+                        E.cx = prev - 2 - space;
+                        break;
+                    
+                    case HASH:
+                    case PERCENT:
+                        if ((E.row[E.cy].chars[commentPosition] == '%' && commentChars == PERCENT) || (E.row[E.cy].chars[commentPosition] == '#' && commentChars == HASH)) {
+                            if (E.row[E.cy].chars[commentPosition + 1] == ' ') {
+                                space = 1;
+                            }
+                            editorRowDelChar(&E.row[E.cy], commentPosition);
+                        }
+                        if (space == 1) {
+                            editorRowDelChar(&E.row[E.cy], commentPosition);
+                        }
+                        E.cx = prev - 1 - space;
+                        break;
+                    
+                    default:
+                        break;
+                }
+            }
+
+            break;       
+
 
         case HOME_KEY:
             E.cx = 0;

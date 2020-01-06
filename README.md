@@ -8,11 +8,16 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 * `CTRL + C`: copy current word
 * `CTRL + D`: duplicate line
 * `CTRL + E`: move to the end of the line
+* `CTRL + F`: find
+* `CTRL + I`: comment line
 * `CTRL + J`: remove indentation
 * `CTRL + N`: step one word right
 * `CTRL + P`: step one word left
+* `CTRL + Q`: quit
 * `CTRL + R`: remove line
+* `CTRL + S`: save
 * `CTRL + T`: indent line
+* `CTRL + U`: uncomment line
 * `CTRL + V`: paste the content of the buffer
 
 ## Progress:
@@ -24,6 +29,7 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 - [ ] config file
 - [ ] auto indent
 - [ ] syntax highlight
+- [ ] fix saving files
 - [ ] ctrl z -> undo 
 - [ ] ctrl y -> redo
 - [X] ctrl d -> duplicate line
@@ -35,11 +41,10 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 - [X] ctrl b -> move to beginning of the line
 - [X] ctrl e -> move to the end of the line
 - [X] display buffer content in status bar
-- [ ] ctrl h -> comment current line
-- [ ] file extension detection used to comment line
-- [ ] fix saving files
+- [X] ctrl i -> comment current line
+- [X] ctrl u -> uncomment current line
+- [X] file extension detection used to comment line
 - [X] enable move 1 word (ctrl arrow)
-- [ ] comment line (detect file extension)
 
 ## Note
 If something bad happens (errors that close the application), the terminal will be compromised. 
