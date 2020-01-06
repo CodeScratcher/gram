@@ -1,6 +1,6 @@
 DEBUG=1
 CFLAGS= -Wall -Wextra -pedantic
-CFLAGSPEDANTIC= -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wwrite-strings -Wunreachable-code -Winit-self -fsanitize=address -std=c99
+CFLAGSPEDANTIC= -Wfloat-equal -Wundef -Wshadow -Wpointer-arith -Wwrite-strings -Wunreachable-code -Winit-self -fsanitize=address
 COMMONFLAGS= -Os
 CC=gcc
 
