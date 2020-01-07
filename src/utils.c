@@ -85,3 +85,50 @@ char *getGitBranch() {
     free(readbuffer);
     return NULL;
 }
+
+char *extractWordFromLine(char *line, int len, int pos) {
+    int lower, upper;
+    int i = pos;
+    char *word = NULL;
+    if (pos > len) {
+        return NULL;
+    } else if (line[pos] == ' ' || line[pos] == '\n' || line[pos] == '\t') {
+        word = (char *)malloc(sizeof(char) * 2);
+        word[0] = ' ';
+        word[1] = '\0';
+    } else {
+        // move right and left to find a space
+        while (i >= 0 && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+            i--;
+        }
+        lower = i + 1;
+        i = pos;
+        while (i < len && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+            i++;
+        }
+        upper = i;
+        // quick fix if the cursor position is on space
+        if (lower == upper + 1) {
+            lower = upper;
+        }
+        // extract the word
+        word = (char *)malloc(sizeof(char) * (upper - lower + 1));
+        strncpy(word, line + lower, upper - lower);
+        word[upper - lower] = '\0';
+    }
+    return word;
+}
+
+// // used to store data in buffer
+// void stringFromChar(char c, char *str) {
+//     *str = c;
+//     *(str + 1) = '\0';
+// }
+
+// same as above, remember to FREE the buffer
+char *stringFromChar(char c) {
+    char *str = malloc(sizeof(char)*2);
+    *str = c;
+    *(str + 1) = '\0';
+    return str;
+}

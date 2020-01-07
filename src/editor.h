@@ -77,5 +77,10 @@ void initEditor();
 void die(const char *s);
 int getCursorPosition(int *rows, int *cols);
 int getWindowSize(int *rows, int *cols);
+void editorInsertChar(int c);
+void editorRowInsertChar(erow *row, int at, int c);
+void editorUpdateRow(erow *row);
+void editorInsertRow(int at, const char *s, size_t len);
+void undoOperation();
 
 #endif

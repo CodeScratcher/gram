@@ -19,17 +19,21 @@ enum operations { NOP,
 typedef struct opstruct {
     int operation;
     int px,py; // position x and y
+    int lenData;
     char *data; // data removed or added
 } opstruct;
 
 typedef struct buffer {
     int bufsize;
+    int position; // position of the last operation
     opstruct oplist[MAX_BUFSIZE];
 } buffer;
 
 void initBuffer();
 void freeBuffer();
 void dumpBuffer();
-void addOperationToBuffer(int operation, char *data, int px, int py);
+void addOperationToBuffer(int operation, char *data, int lenData, int px, int py);
+void bufferUndoOperation();
+void bufferRedoOperation();
 
 buffer buff;

@@ -18,7 +18,7 @@ bars.o: bars.c bars.h editor.h
 	${COMPILE} -c bars.c  
 editor.o: editor.c editor.h
 	${COMPILE} -c editor.c  
-buffer.o: buffer.c buffer.h
+buffer.o: buffer.c buffer.h editor.h
 	${COMPILE} -c buffer.c
 utils.o: utils.c utils.h
 	${COMPILE} -c utils.c

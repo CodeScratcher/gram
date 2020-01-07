@@ -76,40 +76,40 @@ void dumpReceivedReadKey(int key) {
     editorSetStatusMessage(dest);
 }
 
-char *extractWordFromLine(char *line, int len, int pos) {
-    int lower, upper;
-    int i = pos;
-    char *word = NULL;
-    if (pos > len) {
-        return NULL;
-    }
-    else if (line[pos] == ' ' || line[pos] == '\n' || line[pos] == '\t') {
-        word = (char *)malloc(sizeof(char) * 2);
-        word[0] = ' ';
-        word[1] = '\0';
-    }
-    else {
-        // move right and left to find a space
-        while (i >= 0 && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
-            i--;
-        }
-        lower = i + 1;
-        i = pos;
-        while (i < len && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
-            i++;
-        }
-        upper = i;
-        // quick fix if the cursor position is on space
-        if (lower == upper + 1) {
-            lower = upper;
-        }
-        // extract the word
-        word = (char *)malloc(sizeof(char) * (upper - lower + 1));
-        strncpy(word, line + lower, upper - lower);
-        word[upper - lower] = '\0';
-    }
-    return word;
-}
+// char *extractWordFromLine(char *line, int len, int pos) {
+//     int lower, upper;
+//     int i = pos;
+//     char *word = NULL;
+//     if (pos > len) {
+//         return NULL;
+//     }
+//     else if (line[pos] == ' ' || line[pos] == '\n' || line[pos] == '\t') {
+//         word = (char *)malloc(sizeof(char) * 2);
+//         word[0] = ' ';
+//         word[1] = '\0';
+//     }
+//     else {
+//         // move right and left to find a space
+//         while (i >= 0 && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+//             i--;
+//         }
+//         lower = i + 1;
+//         i = pos;
+//         while (i < len && line[i] != ' ' && line[i] != '\t' && line[i] != '\n') {
+//             i++;
+//         }
+//         upper = i;
+//         // quick fix if the cursor position is on space
+//         if (lower == upper + 1) {
+//             lower = upper;
+//         }
+//         // extract the word
+//         word = (char *)malloc(sizeof(char) * (upper - lower + 1));
+//         strncpy(word, line + lower, upper - lower);
+//         word[upper - lower] = '\0';
+//     }
+//     return word;
+// }
 
 void editorFindCallback(char *query, int key) {
     static int last_match = -1;
@@ -180,21 +180,21 @@ int editorRowRxToCx(erow *row, int rx) {
     return cx;
 }
 
-void editorInsertRow(int at, const char *s, size_t len) {
-    if (at < 0 || at > E.numrows)
-        return;
-    E.row = realloc(E.row, sizeof(erow) * (E.numrows + 1));
-    memmove(&E.row[at + 1], &E.row[at], sizeof(erow) * (E.numrows - at));
-    E.row[at].size = len;
-    E.row[at].chars = malloc(len + 1);
-    memcpy(E.row[at].chars, s, len);
-    E.row[at].chars[len] = '\0';
-    E.row[at].rsize = 0;
-    E.row[at].render = NULL;
-    editorUpdateRow(&E.row[at]);
-    E.numrows++;
-    E.dirty++;
-}
+// void editorInsertRow(int at, const char *s, size_t len) {
+//     if (at < 0 || at > E.numrows)
+//         return;
+//     E.row = realloc(E.row, sizeof(erow) * (E.numrows + 1));
+//     memmove(&E.row[at + 1], &E.row[at], sizeof(erow) * (E.numrows - at));
+//     E.row[at].size = len;
+//     E.row[at].chars = malloc(len + 1);
+//     memcpy(E.row[at].chars, s, len);
+//     E.row[at].chars[len] = '\0';
+//     E.row[at].rsize = 0;
+//     E.row[at].render = NULL;
+//     editorUpdateRow(&E.row[at]);
+//     E.numrows++;
+//     E.dirty++;
+// }
 
 void editorInsertNewline() {
     if (E.cx == 0) {
@@ -291,34 +291,34 @@ void editorScroll() {
     }
 }
 
-void editorUpdateRow(erow *row) {
-    int tabs = 0;
-    int j;
-    int idx;
+// void editorUpdateRow(erow *row) {
+//     int tabs = 0;
+//     int j;
+//     int idx;
 
-    for (j = 0; j < row->size; j++)
-        if (row->chars[j] == '\t')
-            tabs++;
-    free(row->render);
-    // add space for the line number
-    // by now fixed at 1
-    // int line_number_size = 2; // number + space
-    row->render = malloc(row->size + tabs * (EDITOR_TAB_STOP - 1) + 1);
-    // row->render[0] = '1';
-    // row->render[1] = ' ';
-    idx = 0;
-    for (j = 0; j < row->size; j++) {
-        if (row->chars[j] == '\t') {
-            row->render[idx++] = ' ';
-            while (idx % EDITOR_TAB_STOP != 0)
-                row->render[idx++] = ' ';
-        } else {
-            row->render[idx++] = row->chars[j];
-        }
-    }
-    row->render[idx] = '\0';
-    row->rsize = idx;
-}
+//     for (j = 0; j < row->size; j++)
+//         if (row->chars[j] == '\t')
+//             tabs++;
+//     free(row->render);
+//     // add space for the line number
+//     // by now fixed at 1
+//     // int line_number_size = 2; // number + space
+//     row->render = malloc(row->size + tabs * (EDITOR_TAB_STOP - 1) + 1);
+//     // row->render[0] = '1';
+//     // row->render[1] = ' ';
+//     idx = 0;
+//     for (j = 0; j < row->size; j++) {
+//         if (row->chars[j] == '\t') {
+//             row->render[idx++] = ' ';
+//             while (idx % EDITOR_TAB_STOP != 0)
+//                 row->render[idx++] = ' ';
+//         } else {
+//             row->render[idx++] = row->chars[j];
+//         }
+//     }
+//     row->render[idx] = '\0';
+//     row->rsize = idx;
+// }
 
 // delete a char (backspace)
 void editorRowDelChar(erow *row, int at) {
@@ -348,24 +348,24 @@ void editorDelChar() {
 }
 
 // insert a char in a row
-void editorRowInsertChar(erow *row, int at, int c) {
-    if (at < 0 || at > row->size)
-        at = row->size;
-    row->chars = realloc(row->chars, row->size + 2);
-    memmove(&row->chars[at + 1], &row->chars[at], row->size - at + 1);
-    row->size++;
-    row->chars[at] = c;
-    editorUpdateRow(row);
-    E.dirty++;
-}
+// void editorRowInsertChar(erow *row, int at, int c) {
+//     if (at < 0 || at > row->size)
+//         at = row->size;
+//     row->chars = realloc(row->chars, row->size + 2);
+//     memmove(&row->chars[at + 1], &row->chars[at], row->size - at + 1);
+//     row->size++;
+//     row->chars[at] = c;
+//     editorUpdateRow(row);
+//     E.dirty++;
+// }
 
-void editorInsertChar(int c) {
-    if (E.cy == E.numrows) {
-        editorInsertRow(E.numrows,"", 0);
-    }
-    editorRowInsertChar(&E.row[E.cy], E.cx, c);
-    E.cx++;
-}
+// void editorInsertChar(int c) {
+//     if (E.cy == E.numrows) {
+//         editorInsertRow(E.numrows,"", 0);
+//     }
+//     editorRowInsertChar(&E.row[E.cy], E.cx, c);
+//     E.cx++;
+// }
 
 void editorFreeRow(erow *row) {
     free(row->render);
@@ -863,11 +863,19 @@ void editorProcessKeypress() {
         case '\x1b':
             break;
 
-        default:
+        // undo
+        case CTRL_KEY('z'):
+            bufferUndoOperation();
+            break;
+
+        // redo
+        case CTRL_KEY('y'):
+            bufferRedoOperation();
+            break;
+
+        default: 
             editorInsertChar(c);
-            // str[0] = c;
-            // str[1] = '\0';
-            // addOperationToBuffer(InsertChar, str, E.cx, E.cy);
+            addOperationToBuffer(InsertChar, stringFromChar(c), 1, E.cx, E.cy);
             break;
     }
     quit_times = EDITOR_QUIT_TIMES;
