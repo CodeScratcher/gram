@@ -26,7 +26,7 @@ utils.o: utils.c utils.h
 .PHONY: clean
 
 clean:
-	rm gram *.o
+	@rm gram *.o
 
 # Flags info - disable them for build?
 # -Wfloat-equal: useful because usually testing floating-point numbers for equality is bad.
