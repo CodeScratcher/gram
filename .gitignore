@@ -3,6 +3,7 @@
 
 ### C ###
 # Prerequisites
+log.txt
 *.tmp
 test.txt
 test.c
