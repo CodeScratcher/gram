@@ -20,6 +20,7 @@ typedef struct opstruct {
     int operation;
     int px,py; // position x and y
     int lenData;
+    int flag; // -1 if undo +1 if redo 0 nothing
     char *data; // data removed or added
 } opstruct;
 
@@ -33,6 +34,7 @@ void initBuffer();
 void freeBuffer();
 void dumpBuffer();
 void addOperationToBuffer(int operation, char *data, int lenData, int px, int py);
+void bufferOperation (int redo);
 void bufferUndoOperation();
 void bufferRedoOperation();
 

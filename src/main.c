@@ -23,6 +23,7 @@
 const char *default_status_msg = "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find |";
 
 // prototypes    
+// TODO REMOVE UNUSED PROTOTYPES
 void disableRawMode();
 void enableRawMode();
 // void die(const char *s);

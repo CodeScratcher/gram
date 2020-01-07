@@ -46,6 +46,7 @@ void addOperationToBuffer(int operation, char *data, int lenData, int px, int py
             buff.oplist[i - 1].operation = buff.oplist[i].operation;
             buff.oplist[i - 1].px = buff.oplist[i].px;
             buff.oplist[i - 1].py = buff.oplist[i].py;
+            buff.oplist[i - 1].flag = buff.oplist[i].flag;
         }
         buff.oplist[MAX_BUFSIZE - 1] .operation = operation;
         free(buff.oplist[MAX_BUFSIZE - 1].data);
@@ -55,6 +56,8 @@ void addOperationToBuffer(int operation, char *data, int lenData, int px, int py
         buff.oplist[MAX_BUFSIZE - 1].lenData = lenData;
         buff.oplist[MAX_BUFSIZE - 1].px = px;
         buff.oplist[MAX_BUFSIZE - 1].py = py;
+        buff.oplist[MAX_BUFSIZE - 1].flag = 0;
+        
     } 
     else {
         buff.oplist[buff.bufsize].operation = operation;
@@ -66,23 +69,59 @@ void addOperationToBuffer(int operation, char *data, int lenData, int px, int py
 
         buff.oplist[buff.bufsize].px = px;
         buff.oplist[buff.bufsize].py = py;
+        buff.oplist[buff.bufsize].flag = 0;
 
         buff.bufsize++;
         buff.position++;
     }
 }
 
-void bufferUndoOperation() {
+void bufferOperation(int redo) {
+    int px,py;
 
-    if (buff.bufsize == 0 || buff.position == -1) {
+    if (buff.bufsize == 0 || (buff.position == -1 && redo == 0) || (buff.position == buff.bufsize && redo == 1)) {
         return;
     }
 
-    if (buff.oplist[buff.position].operation == InsertChar) {
-        // delete char
+    // TODO: refactor with function as parameter for save cursor position
+    // and reset cursor position, something like saveExecuteAndRestore
+    switch (buff.oplist[buff.position].operation) {
+        case InsertChar:
+            // move to the char position
+            px = E.cx;
+            py = E.cy;
+            E.cx = buff.oplist[buff.position + redo].px;
+            E.cy = buff.oplist[buff.position + redo].py;
+            editorDelChar();
+            E.cx = px;
+            E.cy = py;
+
+            // -1 * 2*redo -> redo == 0 -> undo (-1), redo == 1 -> redo (+1)
+            buff.position = buff.position - 1 + 2 * redo;
+        
+            break;
+    
+        case DeleteChar:
+            px = E.cx;
+            py = E.cy;
+            E.cx = buff.oplist[buff.position + redo].px;
+            E.cy = buff.oplist[buff.position + redo].py;
+            editorInsertChar(buff.oplist[buff.position].data[0]);
+            E.cx = px;
+            E.cy = py;
+
+            buff.position = buff.position - 1 + 2 * redo;
+
+        default:
+            break;
     }
+
+}
+
+void bufferUndoOperation() {
+    bufferOperation(0);
 }
 
 void bufferRedoOperation() {
-
+    bufferOperation(1);
 }
