@@ -87,5 +87,7 @@ void editorRowAppendString(erow *row, char *s, size_t len);
 void editorDelRow(int at);
 void editorFreeRow(erow *row);
 void undoOperation();
+void dumpEditorData();
+void dumpRowData(FILE *fp, erow row);
 
 #endif

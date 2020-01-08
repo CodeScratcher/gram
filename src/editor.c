@@ -51,7 +51,37 @@ void initEditor() {
     E.screenrows -= 2;
     E.filesize = 0;
 
-    initBuffer();
+    initBuffer(&undoStack);
+    initBuffer(&redoStack);
+}
+
+void dumpRowData(FILE *fp, erow row) {
+    int i;
+    fprintf(fp,"size: %d rsize: %d\n",row.size,row.rsize);
+    for(i = 0; i < row.size; i++) {
+        fprintf(fp,"chars[i]: %s\n",row.chars);
+    }
+    for (i = 0; i < row.rsize; i++) {
+        fprintf(fp,"render[i]: %s\n", row.render);
+    }
+}
+
+void dumpEditorData() {
+    int i;
+    FILE *fp;
+
+    fp = fopen("log.txt","w+");
+    if(fp == NULL) {
+        die("unable to open log.txt");
+    }
+
+    fprintf(fp, "E.cx: %d E.cy: %d E.rx: %d E.rowoff: %d E.coloff: %d E.dirty: %d\nE.numrows: %d\n", E.cx, E.cy, E.rx, E.rowoff, E.coloff, E.dirty, E.numrows);
+
+    for(i = 0; i < E.numrows; i++) {
+        dumpRowData(fp,E.row[i]);
+    }
+
+    fprintf(fp,"E.filename: %s\nE.copybuffer: %s\n",E.filename,E.copyBuffer);
 }
 
 void die(const char *s) {
