@@ -51,8 +51,8 @@ void initEditor() {
     E.screenrows -= 2;
     E.filesize = 0;
 
-    initBuffer(&undoStack);
-    initBuffer(&redoStack);
+    initBuffer(&undoStack,"undo");
+    initBuffer(&redoStack,"redo");
 }
 
 void dumpRowData(FILE *fp, erow row) {

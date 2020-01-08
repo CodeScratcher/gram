@@ -644,7 +644,8 @@ void editorProcessKeypress() {
                 remove(E.tempfilename);
             }
             // do all free in a function
-            freeBuffer(); 
+            freeBuffer(&redoStack); 
+            freeBuffer(&undoStack); 
             free(E.copyBuffer);
             free(E.gitBranch);
             exit(0); // i do not like it...
@@ -866,17 +867,20 @@ void editorProcessKeypress() {
 
         // undo
         case CTRL_KEY('z'):
-            bufferUndoOperation();
+            bufferOperation(UNDO);
+            // dumpBothBuffersFile();
             break;
 
         // redo
         case CTRL_KEY('y'):
-            bufferRedoOperation();
+            bufferOperation(REDO);
+            // dumpBothBuffersFile();
             break;
 
         default: 
             editorInsertChar(c);
-            addOperationToBuffer(InsertChar, stringFromChar(c), 1, E.cx, E.cy);
+            addToBuffer(&undoStack, InsertChar, stringFromChar(c), 1, E.cx, E.cy);
+            // dumpBothBuffersFile(); 
             break;
     }
     quit_times = EDITOR_QUIT_TIMES;

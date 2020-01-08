@@ -10,6 +10,8 @@ enum operations { NOP,
                   UnindentLine
                 };
 
+enum bufferKind {UNDO, REDO};
+
 // not very portable...
 // operation is one of the enum
 // px and py are the position of the operation
@@ -20,22 +22,30 @@ typedef struct opstruct {
     int operation;
     int px,py; // position x and y
     int lenData;
-    int flag; // -1 if undo +1 if redo 0 nothing
     char *data; // data removed or added
 } opstruct;
 
 typedef struct buffer {
     int bufsize;
-    int position; // position of the last operation
+    char name[5]; // undo or redo
     opstruct oplist[MAX_BUFSIZE];
 } buffer;
 
-void initBuffer();
-void freeBuffer();
-void dumpBuffer();
-void addOperationToBuffer(int operation, char *data, int lenData, int px, int py);
-void bufferOperation (int redo);
-void bufferUndoOperation();
-void bufferRedoOperation();
+void initBuffer(buffer *buff, const char *name);
+void freeBuffer(buffer *buff);
+void dumpBuffer(buffer buff);
+void dumpBothBuffersFile();
+void dumpBufferFile(buffer buff, FILE *fp);
+void addToBuffer(buffer *buff, int operation, char *data, int lenData, int px, int py);
+void popFromBuffer(buffer *buff); 
+void popFromOneAndPushToTheOther(buffer *toPop, buffer *toPush);
+void bufferOperation(int type);
+void bufferExecOperation(buffer *bufferFrom, buffer *bufferTo);
+int invertOperation(int operation);
 
-buffer buff;
+// The idea is to keep 2 stack, for undo e redo
+// when i push ctrl z (undo), pop one action to undo
+// and push it to redo and viceversa
+
+buffer undoStack;
+buffer redoStack;
