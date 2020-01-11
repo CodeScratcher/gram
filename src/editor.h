@@ -4,7 +4,7 @@
 #include <termios.h>
 #include <time.h>
 
-#define EDITOR_VERSION "0.0.1"
+#define EDITOR_VERSION "0.0.2"
 #define EDITOR_TAB_STOP 4
 // number of times the user needs to press ctrl q to close without saving
 #define EDITOR_QUIT_TIMES 3
