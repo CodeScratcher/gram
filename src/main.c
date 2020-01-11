@@ -223,40 +223,49 @@ void editorOpen(char *filename) {
     char *line = NULL;
     size_t linecap = 0;
     ssize_t linelen;
-    int c;
-    char *tempFilename;
-    FILE *copied;
+    // int c;
+    // char *tempFilename;
+    // FILE *copied;
     FILE *fp;
 
-    fp = fopen(filename, "r");
+    if (access(filename, F_OK) != -1) {
+        fp = fopen(filename, "r");
+        fseek(fp, 0L, SEEK_END);
+        E.filesize = ftell(fp);
+        rewind(fp);
+    } 
+    else {
+        fp = fopen(filename, "w");
+    }
+
     if (!fp) { 
         die("fopen");
     }
 
     // get file size
-    resetFileSize(fp);
+    // resetFileSize(fp);
 
     // filename -> .filename.tmp -> n+5
-    tempFilename = (char *)malloc(sizeof(char) * strlen(filename) + 6);
-    snprintf(tempFilename,100,".%s.tmp",filename);
-    copied = fopen(tempFilename, "w");
+    // tempFilename = (char *)malloc(sizeof(char) * strlen(filename) + 6);
+    // snprintf(tempFilename,100,".%s.tmp",filename);
+    // copied = fopen(tempFilename, "w");
 
-    if(!copied) {
-        die("fopen");
-    }
+    // if(!copied) {
+    //     die("fopen");
+    // }
 
-    free(E.tempfilename);
-    E.tempfilename = strdup(tempFilename);
+    // free(E.tempfilename);
+    // E.tempfilename = strdup(tempFilename);
 
-    while ((c = fgetc(fp)) != EOF) {
-        fputc(c, copied);
-    }
+    // while ((c = fgetc(fp)) != EOF) {
+    //     fputc(c, copied);
+    // }
 
-    fclose(fp);
-    fclose(copied);
+    // fclose(fp);
+    // fclose(copied);
 
-    // now the file is in fp not in copied
-    fp = fopen(tempFilename, "r");
+    // // now the file is in fp not in copied
+    // fp = fopen(tempFilename, "r");
     free(E.filename);
     E.filename = strdup(filename);
 
@@ -268,7 +277,7 @@ void editorOpen(char *filename) {
     }
     free(line);
     fclose(fp);
-    free(tempFilename);
+    // free(tempFilename);
     E.dirty = 0;
 }
 
@@ -607,6 +616,7 @@ void editorProcessKeypress() {
     int i;
 
     int c = editorReadKey();
+    // FILE* fp;
 
     if(PRINT_KEY) {
         dumpReceivedReadKey(c);
@@ -665,8 +675,11 @@ void editorProcessKeypress() {
 
         // copy word
         case CTRL_KEY('c'):
+            // fp = fopen("log.txt","a");
+            // fprintf(fp, "E.copyBuffer: %s\nE.row[E.cy].chars:%s\nE.row[E.cy].size%d\nE.cx: %d\n", E.copyBuffer, E.row[E.cy].chars, E.row[E.cy].size, E.cx);
             free(E.copyBuffer);
             E.copyBuffer = extractWordFromLine(E.row[E.cy].chars,E.row[E.cy].size,E.cx);
+            // fclose(fp);
             break;
             
         // paste word
@@ -980,20 +993,21 @@ char *editorRowsToString(int *buflen) {
 void editorSave() {
     int len, fd, written;
     char *buf;
-    FILE *original;
-    FILE *fp;
-    int c;
+    // FILE *original;
+    // FILE *fp;
+    // int c;
     if (E.filename == NULL) {
         E.filename = editorPrompt("Save as: %s (ESC to cancel)",NULL);
-        E.tempfilename = strdup(E.filename);
+        // E.tempfilename = strdup(E.filename);
         if (E.filename == NULL) {
-            editorSetStatusMessage("Save aborted");
+            editorSetStatusMessage("Unable to read the filename - unsaved");
             return;
         }
     }
 
     buf = editorRowsToString(&len);
-    fd = open(E.tempfilename, O_RDWR | O_CREAT, 0644);
+    // fd = open(E.tempfilename, O_RDWR | O_CREAT, 0644);
+    fd = open(E.filename, O_RDWR | O_CREAT, 0644);
     if(fd == -1) {
         editorSetStatusMessage("Unable to save the file\n"); // improve
     } 
@@ -1007,20 +1021,21 @@ void editorSave() {
                 close(fd);
                 free(buf);
                 E.dirty = 0;
+                E.filesize = written;
                 // now copy all the data to the original file
-                if(strcmp(E.filename,E.tempfilename) != 0) {
-                    fp = fopen(E.tempfilename, "r");
-                    original = fopen(E.filename, "w");
-                    if(fp == NULL || original == NULL) {
-                        die("Bad things happened during the copy");
-                    }
-                    while ((c = fgetc(fp)) != EOF) {
-                        fputc(c, original);
-                    }
-                    resetFileSize(fp);
-                    fclose(original);
-                    fclose(fp);
-                }
+                // if(strcmp(E.filename,E.tempfilename) != 0) {
+                //     fp = fopen(E.tempfilename, "r");
+                //     original = fopen(E.filename, "w");
+                //     if(fp == NULL || original == NULL) {
+                //         die("Bad things happened during the copy");
+                //     }
+                //     while ((c = fgetc(fp)) != EOF) {
+                //         fputc(c, original);
+                //     }
+                //     resetFileSize(fp);
+                //     fclose(original);
+                //     fclose(fp);
+                // }
                 editorSetStatusMessage("%d bytes written to disk", len);
                 return;
             }
