@@ -496,6 +496,9 @@ void editorDrawRows(struct abuf *ab) {
             }
         } 
         else {
+            static char buffer[10];
+            int length = snprintf(buffer, sizeof(buffer),"%i ", filerow + 1);
+            abAppend(ab, buffer, length + 1);
             len = E.row[filerow].rsize - E.coloff;
             if (len < 0)
                 len = 0;
@@ -527,8 +530,9 @@ void editorRefreshScreen() {
     editorDrawRows(&ab);
     editorDrawStatusBar(&ab);
     editorDrawMessageBar(&ab);
-
-    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy - E.rowoff) + 1, (E.rx - E.coloff) + 1);
+    char buffer[32];
+    int i = snprintf(buffer, sizeof(buffer), "%i", E.cy + 1)
+    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy - E.rowoff) + 1, (E.rx - E.coloff) + i + 2);
     abAppend(&ab, buf, strlen(buf));
     abAppend(&ab, "\x1b[?25h", 6); // show the cursor
 
