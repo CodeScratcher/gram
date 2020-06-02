@@ -32,7 +32,6 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 * `CTRL + Z`: not assigned (undo)
 
 ## Progress:
-- [ ] line numbers
 - [ ] libncurses?
 - [ ] split source in multiple files
 - [ ] remove all break in loop statement (i do not like them)
@@ -45,6 +44,7 @@ Why? To use it to make quick changes on file on servers i do not have vim instal
 - [ ] remove include from header
 - [ ] ctrl z -> undo 
 - [ ] ctrl y -> redo
+- [X] line numbers
 - [X] ctrl d -> duplicate line
 - [X] ctrl r -> remove line
 - [X] ctrl t -> indent line
